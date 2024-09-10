@@ -5,14 +5,12 @@ import { Chart } from 'react-chartjs-2';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler);
 
 function WeatherChart({ hourlyData }) {
-    // Finde den Index der aktuellen Stunde
     const now = new Date();
     const currentHourIndex = hourlyData.time.findIndex(time => {
         const dateTime = new Date(time);
         return dateTime.getHours() === now.getHours() && dateTime.getDate() === now.getDate();
     });
 
-    // Extrahiere die nächsten 24 Stunden Daten
     const next24Hours = (arr) => arr.slice(currentHourIndex, currentHourIndex + 24);
 
     const labels = next24Hours(hourlyData.time).map(time => {
@@ -20,35 +18,53 @@ function WeatherChart({ hourlyData }) {
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     });
 
+    const temperatures = next24Hours(hourlyData.temperature_2m);
+    const precipProbabilities = next24Hours(hourlyData.precipitation_probability);
+    const solarRadiations = next24Hours(hourlyData.direct_radiation);
+    const windDirections = next24Hours(hourlyData.winddirection_10m);
+    const precipitations = next24Hours(hourlyData.precipitation); // Neue Zeile für Regenmenge
+
     const data = {
         labels,
         datasets: [
             {
                 type: 'line',
                 label: 'Temperatur (°C)',
-                data: next24Hours(hourlyData.temperature_2m),
-                borderColor: 'rgb(255, 99, 132)',
-                backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                yAxisID: 'y',
-                order: 1
+                data: temperatures,
+                borderColor: 'rgb(255, 99, 132, 1)',
+                backgroundColor: 'rgba(255, 99, 132, 1)',
+                yAxisID: 'y-temp',
+                order: 1,
+                tension: 0.4
             },
             {
                 type: 'bar',
                 label: 'Regenwahrscheinlichkeit (%)',
-                data: next24Hours(hourlyData.precipitation_probability),
-                backgroundColor: 'rgba(53, 162, 235, 0.5)',
-                yAxisID: 'y1',
+                data: precipProbabilities,
+                backgroundColor: 'rgba(53, 162, 235, 0.6)',
+                yAxisID: 'y-precip-prob',
                 order: 2
             },
             {
                 type: 'line',
                 label: 'Sonneneinstrahlung (W/m²)',
-                data: next24Hours(hourlyData.direct_radiation),
-                borderColor: 'rgba(255, 206, 86, 1)',
-                backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                data: solarRadiations,
+                borderColor: 'rgba(255, 206, 86, 0.4)',
+                backgroundColor: 'rgba(255, 206, 86, 0.4)',
                 fill: true,
-                yAxisID: 'y2',
-                order: 0
+                yAxisID: 'y-solar',
+                order: 0,
+                tension: 0.4
+            },
+            {
+                type: 'line',
+                label: 'Regenmenge (mm)',
+                data: precipitations,
+                borderColor: 'rgba(0 , 0, 255, 0.8)',
+                backgroundColor: 'rgba(0, 0, 255, 0.8)',
+                yAxisID: 'y-precip',
+                order: 4,
+                tension: 0.4
             }
         ],
     };
@@ -65,6 +81,14 @@ function WeatherChart({ hourlyData }) {
                 display: true,
                 text: 'Wetter Vorhersage für die nächsten 24 Stunden',
             },
+            tooltip: {
+                callbacks: {
+                    afterBody: (context) => {
+                        const index = context[0].dataIndex;
+                        return `Windrichtung: ${windDirections[index]}°`;
+                    }
+                }
+            }
         },
         scales: {
             x: {
@@ -73,7 +97,7 @@ function WeatherChart({ hourlyData }) {
                     text: 'Uhrzeit'
                 }
             },
-            y: {
+            'y-temp': {
                 type: 'linear',
                 display: true,
                 position: 'left',
@@ -82,7 +106,7 @@ function WeatherChart({ hourlyData }) {
                     text: 'Temperatur (°C)'
                 }
             },
-            y1: {
+            'y-precip-prob': {
                 type: 'linear',
                 display: true,
                 position: 'right',
@@ -96,10 +120,10 @@ function WeatherChart({ hourlyData }) {
                     drawOnChartArea: false,
                 },
             },
-            y2: {
+            'y-solar': {
                 type: 'linear',
                 display: true,
-                position: 'right',
+                position: 'left',
                 title: {
                     display: true,
                     text: 'Sonneneinstrahlung (W/m²)'
@@ -109,6 +133,19 @@ function WeatherChart({ hourlyData }) {
                     drawOnChartArea: false,
                 },
             },
+            'y-precip': {
+                type: 'linear',
+                display: true,
+                position: 'right',
+                title: {
+                    display: true,
+                    text: 'Regenmenge (mm)'
+                },
+                min: 0,
+                grid: {
+                    drawOnChartArea: false,
+                },
+            }
         },
     };
 
