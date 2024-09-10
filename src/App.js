@@ -10,16 +10,23 @@ function App() {
   const [weatherData, setWeatherData] = useState(null);
   const [error, setError] = useState(null);
 
-  const handleSearch = async (e) => {
-    e.preventDefault();
+  const handleSearch = async (e, lat, lon, query) => {
+    if (e) e.preventDefault();
     try {
-      const coords = await getCoordinates(query);
+      let coords;
+      if (lat !== null && lon !== null) {
+        coords = { latitude: lat, longitude: lon };
+      } else if (query) {
+        coords = await getCoordinates(query);
+      } else {
+        throw new Error('Keine gültigen Suchparameter');
+      }
       setCoordinates(coords);
       const weather = await getWeatherData(coords.latitude, coords.longitude);
       setWeatherData(weather);
       setError(null);
     } catch (err) {
-      setError('Fehler beim Abrufen der Daten.');
+      setError('Fehler beim Abrufen der Daten: ' + err.message);
       setCoordinates(null);
       setWeatherData(null);
     }
@@ -34,6 +41,7 @@ function App() {
         handleSearch={handleSearch}
         error={error}
         coordinates={coordinates}
+        setCoordinates={setCoordinates}
       />
       {weatherData && weatherData.hourly && (
         <WeatherChart hourlyData={weatherData.hourly} />

@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, useMap } from 'react-leaflet';
+import React, { useEffect, useState } from 'react';
+import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import './icon';  // Importieren Sie die icon.js Datei
 
@@ -12,7 +12,24 @@ function ChangeView({ center, zoom }) {
     return null;
 }
 
-function MapComponent({ latitude, longitude }) {
+// Diese Komponente handhabt Klick-Events auf der Karte
+function LocationMarker({ onLocationChange }) {
+    const [position, setPosition] = useState(null);
+    const map = useMapEvents({
+        click(e) {
+            const newPosition = [e.latlng.lat, e.latlng.lng];
+            setPosition(newPosition);
+            onLocationChange(newPosition);
+            map.flyTo(newPosition, map.getZoom());
+        },
+    });
+
+    return position === null ? null : (
+        <Marker position={position} />
+    );
+}
+
+function MapComponent({ latitude, longitude, onLocationChange }) {
     const position = [latitude, longitude];
     const zoom = 10;  // Sie können den Zoom-Level nach Bedarf anpassen
 
@@ -28,6 +45,7 @@ function MapComponent({ latitude, longitude }) {
                 attribution='© OpenStreetMap contributors'
             />
             <Marker position={position} />
+            <LocationMarker onLocationChange={onLocationChange} />
         </MapContainer>
     );
 }
