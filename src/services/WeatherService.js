@@ -1,8 +1,6 @@
-const BASE_URL = 'https://api.open-meteo.com/v1/forecast';
-
 export const getWeatherData = async (latitude, longitude) => {
     try {
-        const response = await fetch(`${BASE_URL}?latitude=${latitude}&longitude=${longitude}&current_weather=true`);
+        const response = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,precipitation_probability,direct_radiation&timezone=auto`);
         if (!response.ok) {
             throw new Error('Wetterdaten konnten nicht abgerufen werden');
         }
