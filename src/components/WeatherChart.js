@@ -5,13 +5,16 @@ import { Chart } from 'react-chartjs-2';
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler);
 
 function WeatherChart({ hourlyData }) {
+    if (!hourlyData || !hourlyData.time) {
+        return <div>Lade Wetterdaten...</div>;
+    }
     const now = new Date();
     const currentHourIndex = hourlyData.time.findIndex(time => {
         const dateTime = new Date(time);
         return dateTime.getHours() === now.getHours() && dateTime.getDate() === now.getDate();
     });
 
-    const next24Hours = (arr) => arr.slice(currentHourIndex, currentHourIndex + 24);
+    const next24Hours = (arr) => arr ? arr.slice(currentHourIndex, currentHourIndex + 24) : [];
 
     const labels = next24Hours(hourlyData.time).map(time => {
         const date = new Date(time);
@@ -22,7 +25,9 @@ function WeatherChart({ hourlyData }) {
     const precipProbabilities = next24Hours(hourlyData.precipitation_probability);
     const solarRadiations = next24Hours(hourlyData.direct_radiation);
     const windDirections = next24Hours(hourlyData.winddirection_10m);
-    const precipitations = next24Hours(hourlyData.precipitation); // Neue Zeile für Regenmenge
+    const precipitations = next24Hours(hourlyData.precipitation);
+    const cloudCovers = next24Hours(hourlyData.cloudcover);
+    const humidities = next24Hours(hourlyData.relativehumidity_2m);
 
     const data = {
         labels,
@@ -31,40 +36,67 @@ function WeatherChart({ hourlyData }) {
                 type: 'line',
                 label: 'Temperatur (°C)',
                 data: temperatures,
-                borderColor: 'rgb(255, 99, 132, 1)',
-                backgroundColor: 'rgba(255, 99, 132, 1)',
+                borderColor: 'rgb(255, 99, 132)',
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
                 yAxisID: 'y-temp',
                 order: 1,
                 tension: 0.4
             },
             {
-                type: 'bar',
+                type: 'line',
+                label: 'Luftfeuchtigkeit (%)',
+                data: humidities,
+                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                yAxisID: 'y-percent',
+                order: 2,
+                tension: 0.4,
+                pointRadius: 0,
+            },
+            {
+                type: 'line',
                 label: 'Regenwahrscheinlichkeit (%)',
                 data: precipProbabilities,
-                backgroundColor: 'rgba(53, 162, 235, 0.6)',
-                yAxisID: 'y-precip-prob',
-                order: 2
+                borderColor: 'rgba(53, 162, 235, 1)',
+                backgroundColor: 'rgba(53, 162, 235, 0.2)',
+                yAxisID: 'y-percent',
+                order: 3,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 0,
             },
             {
                 type: 'line',
                 label: 'Sonneneinstrahlung (W/m²)',
                 data: solarRadiations,
-                borderColor: 'rgba(255, 206, 86, 0.4)',
-                backgroundColor: 'rgba(255, 206, 86, 0.4)',
+                borderColor: 'rgba(255, 206, 86, 1)',
+                backgroundColor: 'rgba(255, 206, 86, 0.2)',
                 fill: true,
                 yAxisID: 'y-solar',
-                order: 0,
-                tension: 0.4
+                order: 4,
+                tension: 0.4,
+                pointRadius: 0,
+            },
+            {
+                type: 'bar',
+                label: 'Regenmenge (mm)',
+                data: precipitations,
+                borderColor: 'rgba(0, 0, 255, 1)',
+                backgroundColor: 'rgba(0, 0, 255, 0.5)',
+                yAxisID: 'y-precip',
+                order: 5,
             },
             {
                 type: 'line',
-                label: 'Regenmenge (mm)',
-                data: precipitations,
-                borderColor: 'rgba(0 , 0, 255, 0.8)',
-                backgroundColor: 'rgba(0, 0, 255, 0.8)',
-                yAxisID: 'y-precip',
-                order: 4,
-                tension: 0.4
+                label: 'Wolkenbedeckung (%)',
+                data: cloudCovers,
+                borderColor: 'rgba(128, 128, 128, 1)',
+                backgroundColor: 'rgba(128, 128, 128, 0.2)',
+                fill: true,
+                yAxisID: 'y-percent',
+                order: 6,
+                tension: 0.4,
+                pointRadius: 0,
             }
         ],
     };
@@ -106,19 +138,16 @@ function WeatherChart({ hourlyData }) {
                     text: 'Temperatur (°C)'
                 }
             },
-            'y-precip-prob': {
+            'y-percent': {
                 type: 'linear',
                 display: true,
                 position: 'right',
                 title: {
                     display: true,
-                    text: 'Regenwahrscheinlichkeit (%)'
+                    text: 'Prozent (%)'
                 },
                 min: 0,
                 max: 100,
-                grid: {
-                    drawOnChartArea: false,
-                },
             },
             'y-solar': {
                 type: 'linear',
@@ -145,7 +174,7 @@ function WeatherChart({ hourlyData }) {
                 grid: {
                     drawOnChartArea: false,
                 },
-            }
+            },
         },
     };
 
