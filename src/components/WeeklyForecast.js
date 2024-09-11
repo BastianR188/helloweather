@@ -2,16 +2,28 @@ import React from 'react';
 import './WeeklyForecast.css'; // Stellen Sie sicher, dass Sie diese CSS-Datei erstellen
 
 function WeeklyForecast({ dailyData }) {
-    console.log('WeeklyForecast dailyData:', dailyData);
-
     const days = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
 
-    const getWeatherIcon = (cloudCover) => {
+    const getWeatherIcon = (cloudCover, precipProb, temp, precipAmount) => {
+        // Gewitter (vereinfachte Annahme: hohe Niederschlagswahrscheinlichkeit und -menge)
+        if (precipProb > 80 && precipAmount > 10) return '🌩️';
+
+        // Schnee (wenn Temperatur unter oder nahe 0°C und Niederschlagswahrscheinlichkeit hoch)
+        if (temp <= 2 && precipProb > 50) return '❄️';
+
+        // Regen
+        if (precipProb > 50) {
+            if (cloudCover > 80) return '🌧️';  // starker Regen
+            return '🌦️';  // leichter Regen oder Schauer
+        }
+
+        // Bewölkung (wie zuvor)
         if (cloudCover < 25) return '☀️';
         if (cloudCover < 50) return '🌤️';
         if (cloudCover < 75) return '⛅';
         return '☁️';
     };
+
 
     const getWindDirection = (degrees) => {
         const directions = ['N', 'NO', 'O', 'SO', 'S', 'SW', 'W', 'NW'];
@@ -44,9 +56,17 @@ function WeeklyForecast({ dailyData }) {
                 <tr>
                     <th>Wetter</th>
                     {Array.from({ length: dataLength }, (_, index) => (
-                        <td key={index}>{getWeatherIcon(dailyData.cloudcover_mean?.[index] || 0)}</td>
+                        <td key={index}>
+                            {getWeatherIcon(
+                                dailyData.cloudcover_mean?.[index] || 0,
+                                dailyData.precipitation_probability_mean?.[index] || 0,
+                                dailyData.temperature_2m_mean?.[index] || 0,
+                                dailyData.precipitation_sum?.[index] || 0
+                            )}
+                        </td>
                     ))}
                 </tr>
+
                 <tr>
                     <th>Temperatur</th>
                     {Array.from({ length: dataLength }, (_, index) => (

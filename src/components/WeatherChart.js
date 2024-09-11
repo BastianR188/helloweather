@@ -35,6 +35,10 @@ function WeatherChart({ hourlyData }) {
         const cloudCovers = next24Hours(hourlyData.cloudcover);
         const humidities = next24Hours(hourlyData.relativehumidity_2m);
 
+        const maxPrecipProbability = Math.max(...precipProbabilities);
+        const maxPrecipitation = Math.max(...precipitations);
+        const scaledMaxPrecipitation = maxPrecipitation * (100 / maxPrecipProbability);
+
         return {
             labels,
             datasets: [
@@ -105,7 +109,8 @@ function WeatherChart({ hourlyData }) {
                     pointRadius: 0,
                 }
             ],
-            windDirections
+            windDirections,
+            scaledMaxPrecipitation
         };
     }, [hourlyData]);
 
@@ -213,12 +218,21 @@ function WeatherChart({ hourlyData }) {
                 },
                 ticks: {
                     color: isDarkMode ? '#ffffff' : '#333333',
+                    callback: function (value) {
+                        return value.toFixed(1) + ' mm';
+                    }
                 },
                 grid: {
                     drawOnChartArea: false,
                     color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
                 },
                 min: 0,
+                max: chartData ? Math.ceil(chartData.scaledMaxPrecipitation) : 10,
+                afterDataLimits: (scale) => {
+                    if (chartData) {
+                        scale.max = Math.ceil(chartData.scaledMaxPrecipitation);
+                    }
+                }
             },
         },
     }), [isDarkMode, chartData]);

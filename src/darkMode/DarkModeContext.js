@@ -4,22 +4,40 @@ export const DarkModeContext = createContext();
 
 export const DarkModeProvider = ({ children }) => {
     const [isDarkMode, setIsDarkMode] = useState(() => {
-        const savedMode = localStorage.getItem('darkMode');
-        return savedMode ? JSON.parse(savedMode) : false;
+        const savedSettings = localStorage.getItem('appSettings');
+        if (savedSettings) {
+            const settings = JSON.parse(savedSettings);
+            return settings.darkMode;
+        }
+        return false;
+    });
+
+    const [savedCoordinates, setSavedCoordinates] = useState(() => {
+        const savedSettings = localStorage.getItem('appSettings');
+        if (savedSettings) {
+            const settings = JSON.parse(savedSettings);
+            return settings.coordinates;
+        }
+        return null;
     });
 
     useEffect(() => {
-        localStorage.setItem('darkMode', JSON.stringify(isDarkMode));
+        const settings = {
+            darkMode: isDarkMode,
+            coordinates: savedCoordinates
+        };
+        localStorage.setItem('appSettings', JSON.stringify(settings));
         if (isDarkMode) {
             document.body.classList.add('dark-mode');
         } else {
             document.body.classList.remove('dark-mode');
         }
-    }, [isDarkMode]);
+    }, [isDarkMode, savedCoordinates]);
 
     return (
-        <DarkModeContext.Provider value={{ isDarkMode, setIsDarkMode }}>
+        <DarkModeContext.Provider value={{ isDarkMode, setIsDarkMode, savedCoordinates, setSavedCoordinates }}>
             {children}
         </DarkModeContext.Provider>
     );
 };
+

@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import MapComponent from './MapComponent';
 import './SearchAndDisplay.css';
+import { DarkModeContext } from '../darkMode/DarkModeContext';
 
-function SearchAndDisplay({ handleSearch, error, coordinates, setCoordinates }) {
+function SearchAndDisplay({ handleSearch, error, coordinates, isLoading }) {
+    const { savedCoordinates } = useContext(DarkModeContext);
     const [query, setQuery] = useState('');
-    const [lat, setLat] = useState('');
-    const [lon, setLon] = useState('');
+    const [lat, setLat] = useState(savedCoordinates ? savedCoordinates.latitude.toFixed(6) : '');
+    const [lon, setLon] = useState(savedCoordinates ? savedCoordinates.longitude.toFixed(6) : '');
     const [isQueryChanged, setIsQueryChanged] = useState(false);
 
     useEffect(() => {
@@ -63,34 +65,39 @@ function SearchAndDisplay({ handleSearch, error, coordinates, setCoordinates }) 
                     value={query}
                     onChange={handleQueryChange}
                     placeholder="Stadt, PLZ oder Adresse eingeben"
+                    disabled={isLoading}
                 />
 
-                <button type="submit">Suchen</button>
+                <button type="submit" disabled={isLoading}>
+                    Suchen
+                </button>
             </form>
             {error && <p className="error">{error}</p>}
             {coordinates && (
                 <div className='container'>
                     <div style={{ marginRight: '20px' }}>
                         <h2>Koordinaten:</h2>
-                        <p>Breitengrad: 
+                        <p>Breitengrad:
                             <input
-                            className='input_coord'
-                            type="number"
-                            value={lat}
-                            onChange={handleLatChange}
-                            placeholder="Breitengrad"
-                            step="any"
-                        />
+                                className='input_coord'
+                                type="number"
+                                value={lat}
+                                onChange={handleLatChange}
+                                placeholder="Breitengrad"
+                                step="any"
+                                disabled={isLoading}
+                            />
                         </p>
                         <p>Längengrad:
                             <input
-                            className='input_coord'
-                            type="number"
-                            value={lon}
-                            onChange={handleLonChange}
-                            placeholder="Längengrad"
-                            step="any"
-                        /></p>
+                                className='input_coord'
+                                type="number"
+                                value={lon}
+                                onChange={handleLonChange}
+                                placeholder="Längengrad"
+                                step="any"
+                                disabled={isLoading}
+                            /></p>
                     </div>
                     <MapComponent
                         latitude={coordinates.latitude}

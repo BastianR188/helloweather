@@ -69,7 +69,7 @@ input[type="number"],
 input[type="search"] {
   background-color: transparent;
   border: none;
-  border-bottom: 2px solid var(--input-border);
+  border: 2px solid var(--input-border);
   color: var(--text-color);
   font-size: 16px;
   padding: 10px 5px;
@@ -81,7 +81,7 @@ input[type="text"]:focus,
 input[type="number"]:focus,
 input[type="search"]:focus {
   outline: none;
-  border-bottom-color: var(--primary-color);
+  border-color: var(--primary-color);
 }
 
 button {
