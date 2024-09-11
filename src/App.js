@@ -4,6 +4,9 @@ import WeatherChart from './components/WeatherChart';
 import WeeklyForecast from './components/WeeklyForecast';
 import { getCoordinates } from './services/GeocodingService';
 import { getWeatherData } from './services/WeatherService';
+import './App.css'
+import { DarkModeProvider } from './darkMode/DarkModeContext';
+import DarkModeToggle from './darkMode/DarkModeToggle';
 
 function App() {
   const [coordinates, setCoordinates] = useState(null);
@@ -36,16 +39,19 @@ function App() {
   };
 
   return (
-    <div className="App">
+    <DarkModeProvider>
+    <div className="App ">
+      <div className='max_width header'>
       <h1>Hello Weather</h1>
-      <SearchAndDisplay 
+      <DarkModeToggle />
+      <SearchAndDisplay
         handleSearch={handleSearch}
         error={error}
         coordinates={coordinates}
         setCoordinates={setCoordinates}
-      />
+      /></div>
       {weatherData && (
-        <div>
+        <div className='max_width'> 
           <h2>Aktuelles Wetter:</h2>
           <WeatherChart hourlyData={weatherData} />
           <h2>7-Tage-Vorhersage:</h2>
@@ -53,6 +59,7 @@ function App() {
         </div>
       )}
     </div>
+    </DarkModeProvider>
   );
 }
 

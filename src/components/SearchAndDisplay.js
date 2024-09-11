@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import MapComponent from './MapComponent';
+import './SearchAndDisplay.css';
 
 function SearchAndDisplay({ handleSearch, error, coordinates, setCoordinates }) {
     const [query, setQuery] = useState('');
@@ -54,9 +55,10 @@ function SearchAndDisplay({ handleSearch, error, coordinates, setCoordinates }) 
     };
 
     return (
-        <div>
+        <div className='main'>
             <form onSubmit={handleSubmit}>
                 <input
+                    className='input'
                     type="text"
                     value={query}
                     onChange={handleQueryChange}
@@ -67,11 +69,12 @@ function SearchAndDisplay({ handleSearch, error, coordinates, setCoordinates }) 
             </form>
             {error && <p className="error">{error}</p>}
             {coordinates && (
-                <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                <div className='container'>
                     <div style={{ marginRight: '20px' }}>
                         <h2>Koordinaten:</h2>
                         <p>Breitengrad: 
                             <input
+                            className='input_coord'
                             type="number"
                             value={lat}
                             onChange={handleLatChange}
@@ -81,6 +84,7 @@ function SearchAndDisplay({ handleSearch, error, coordinates, setCoordinates }) 
                         </p>
                         <p>Längengrad:
                             <input
+                            className='input_coord'
                             type="number"
                             value={lon}
                             onChange={handleLonChange}
