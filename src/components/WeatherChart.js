@@ -1,6 +1,5 @@
 import React from 'react';
 import { useContext, useMemo } from 'react';
-import { Chart } from 'react-chartjs-2';
 import { DarkModeContext } from '../darkMode/DarkModeContext';
 import {
     Chart as ChartJS,
@@ -12,9 +11,12 @@ import {
     Title,
     Tooltip,
     Legend,
-    Filler
+    Filler,
+    LineController,
+    BarController
 } from 'chart.js';
-import { Chart } from 'react-chartjs-2';
+import { Chart as ReactChart } from 'react-chartjs-2';
+
 ChartJS.register(
     CategoryScale,
     LinearScale,
@@ -24,9 +26,10 @@ ChartJS.register(
     Title,
     Tooltip,
     Legend,
-    Filler
+    Filler,
+    LineController,
+    BarController
 );
-
 
 function WeatherChart({ hourlyData }) {
     const { isDarkMode } = useContext(DarkModeContext);
@@ -262,7 +265,7 @@ function WeatherChart({ hourlyData }) {
         return <div>Render Wetterdaten...</div>;
     }
 
-    return <Chart data={chartData} options={options} />
+    return <ReactChart type='bar' data={chartData} options={options} />;
 
 }
 

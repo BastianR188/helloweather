@@ -8,6 +8,7 @@ import './App.css'
 import { DarkModeProvider, DarkModeContext } from './darkMode/DarkModeContext';
 import DarkModeToggle from './darkMode/DarkModeToggle';
 import { saveCoordinates, loadCoordinates, saveCityName, loadCityName } from './services/OfflineSettingsService';
+import { getWeatherIcon } from './services/getWeatherIcon';
 
 function AppContent() {
   const { savedCoordinates } = useContext(DarkModeContext);
@@ -17,6 +18,7 @@ function AppContent() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [cityName, setCityName] = useState('');
+  const [weatherIcon, setWeatherIcon] = useState('');
 
   useEffect(() => {
     const handlePageLoad = async () => {
@@ -59,6 +61,13 @@ function AppContent() {
       const weather = await getWeatherData(coords.latitude, coords.longitude);
       setWeatherData(weather.hourly);
       setDailyData(weather.daily);
+      const newIcon = getWeatherIcon(
+        weather.daily.cloudcover_mean[0],
+        weather.daily.precipitation_probability_mean[0],
+        weather.daily.temperature_2m_mean[0],
+        weather.daily.precipitation_sum[0]
+      );
+      setWeatherIcon(newIcon);
       setError(null);
     } catch (err) {
       setError('Fehler beim Abrufen der Daten: ' + err.message);
@@ -90,7 +99,7 @@ function AppContent() {
       ) : (
         weatherData && dailyData && (
           <div className={isLoading ? 'hidden' : 'max_width'}>
-            <h2>Aktuelles Wetter: {cityName}</h2>
+            <h2>Aktuelles Wetter: <span>{weatherIcon}</span> {cityName}</h2>
             <WeatherChart hourlyData={weatherData} />
             <h2>7-Tage-Vorhersage:</h2>
             <WeeklyForecast dailyData={dailyData} />
