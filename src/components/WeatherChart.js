@@ -1,10 +1,32 @@
 import React from 'react';
 import { useContext, useMemo } from 'react';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler } from 'chart.js';
 import { Chart } from 'react-chartjs-2';
 import { DarkModeContext } from '../darkMode/DarkModeContext';
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+    Filler
+} from 'chart.js';
+import { Chart } from 'react-chartjs-2';
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend,
+    Filler
+);
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Legend, Filler);
 
 function WeatherChart({ hourlyData }) {
     const { isDarkMode } = useContext(DarkModeContext);
@@ -236,12 +258,12 @@ function WeatherChart({ hourlyData }) {
             },
         },
     }), [isDarkMode, chartData]);
-
     if (!chartData) {
-        return <div>Lade Wetterdaten...</div>;
+        return <div>Render Wetterdaten...</div>;
     }
 
-    return <Chart type='bar' data={chartData} options={options} />;
+    return <Chart data={chartData} options={options} />
+
 }
 
 export default WeatherChart;

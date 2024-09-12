@@ -23,10 +23,9 @@ function AppContent() {
       const coord = loadCoordinates();
       const savedCityName = loadCityName();
       if (savedCityName) {
-        
         handleSearch(null, null, null, savedCityName);
         setCityName(savedCityName);
-      } else {
+      } else if (coord) {
         handleSearch(null, coord.latitude, coord.longitude, null);
       }
     };
@@ -90,7 +89,7 @@ function AppContent() {
         <div className="loader"></div>
       ) : (
         weatherData && dailyData && (
-          <div className={isLoading ? 'hidden' : 'max-width'}>
+          <div className={isLoading ? 'hidden' : 'max_width'}>
             <h2>Aktuelles Wetter: {cityName}</h2>
             <WeatherChart hourlyData={weatherData} />
             <h2>7-Tage-Vorhersage:</h2>
