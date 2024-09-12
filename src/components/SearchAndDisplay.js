@@ -3,9 +3,9 @@ import MapComponent from './MapComponent';
 import './SearchAndDisplay.css';
 import { DarkModeContext } from '../darkMode/DarkModeContext';
 
-function SearchAndDisplay({ handleSearch, error, coordinates, isLoading }) {
-    const { savedCoordinates } = useContext(DarkModeContext);
+function SearchAndDisplay({ handleSearch, error, coordinates, isLoading, cityName }) {
     const [query, setQuery] = useState('');
+    const { savedCoordinates } = useContext(DarkModeContext);
     const [lat, setLat] = useState(savedCoordinates ? savedCoordinates.latitude.toFixed(6) : '');
     const [lon, setLon] = useState(savedCoordinates ? savedCoordinates.longitude.toFixed(6) : '');
     const [isQueryChanged, setIsQueryChanged] = useState(false);
@@ -14,8 +14,9 @@ function SearchAndDisplay({ handleSearch, error, coordinates, isLoading }) {
         if (coordinates && !isQueryChanged) {
             setLat(coordinates.latitude.toFixed(6));
             setLon(coordinates.longitude.toFixed(6));
+            setQuery(cityName); // Fügen Sie diese Zeile hinzu
         }
-    }, [coordinates, isQueryChanged]);
+    }, [coordinates, isQueryChanged, cityName]); // Fügen Sie cityName zu den Abhängigkeiten hinzu
 
     const handleQueryChange = (e) => {
         setQuery(e.target.value);
