@@ -9,6 +9,9 @@ import { DarkModeProvider, DarkModeContext } from './darkMode/DarkModeContext';
 import DarkModeToggle from './darkMode/DarkModeToggle';
 import { saveCoordinates, loadCoordinates, saveCityName, loadCityName } from './services/OfflineSettingsService';
 import { getWeatherIcon } from './services/getWeatherIcon';
+import { loadMapVisibility, saveMapVisibility } from './services/OfflineSettingsService';
+
+
 
 function AppContent() {
   const { savedCoordinates } = useContext(DarkModeContext);
@@ -19,6 +22,7 @@ function AppContent() {
   const [error, setError] = useState(null);
   const [cityName, setCityName] = useState('');
   const [weatherIcon, setWeatherIcon] = useState('');
+  const [isMapVisible, setIsMapVisible] = useState(loadMapVisibility());
 
   useEffect(() => {
     const handlePageLoad = async () => {
@@ -39,6 +43,12 @@ function AppContent() {
     };
   }, []); // Leeres Abhängigkeitsarray bedeutet, dass dieser Effekt nur einmal beim Mounten ausgeführt wird
 
+  const toggleMapVisibility = () => {
+    const newVisibility = !isMapVisible;
+    setIsMapVisible(newVisibility);
+    saveMapVisibility(newVisibility);
+  };
+  
   const handleSearch = async (e, lat, lon, query) => {
     if (e) e.preventDefault();
     setIsLoading(true);
@@ -84,13 +94,19 @@ function AppContent() {
       <div className='header'>
         <div className='max_width'>
           <h1>Hello Weather</h1>
-          <DarkModeToggle />
+          <div className="header-controls">
+            <DarkModeToggle />
+            <button onClick={toggleMapVisibility}>
+              {isMapVisible ? 'Karte ausblenden' : 'Karte einblenden'}
+            </button>
+          </div>
           <SearchAndDisplay
             handleSearch={handleSearch}
             error={error}
             coordinates={coordinates}
             isLoading={isLoading}
             cityName={cityName}
+            isMapVisible={isMapVisible}
           />
         </div>
       </div>

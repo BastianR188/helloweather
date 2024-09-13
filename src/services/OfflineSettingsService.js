@@ -5,12 +5,25 @@ export const loadSettings = () => {
     if (savedSettings) {
         return JSON.parse(savedSettings);
     }
-    return { darkMode: false, coordinates: null, cityName: '' };
+    return {
+        darkMode: false,
+        coordinates: null,
+        cityName: '',
+        chartVisibility: {
+            temperature: true,
+            humidity: true,
+            precipProbability: true,
+            solarRadiation: true,
+            precipitation: true,
+            cloudCover: true
+        }
+    };
 };
 
 export const saveSettings = (settings) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
 };
+
 
 export const loadDarkMode = () => {
     const settings = loadSettings();
@@ -42,5 +55,27 @@ export const loadCityName = () => {
 export const saveCityName = (cityName) => {
     const settings = loadSettings();
     settings.cityName = cityName;
+    saveSettings(settings);
+};
+
+export const loadChartVisibility = () => {
+    const settings = loadSettings();
+    return settings.chartVisibility;
+};
+
+export const saveChartVisibility = (chartVisibility) => {
+    const settings = loadSettings();
+    settings.chartVisibility = chartVisibility;
+    saveSettings(settings);
+};
+
+export const loadMapVisibility = () => {
+    const settings = loadSettings();
+    return settings.mapVisible ?? true; // Standard ist sichtbar
+};
+
+export const saveMapVisibility = (isVisible) => {
+    const settings = loadSettings();
+    settings.mapVisible = isVisible;
     saveSettings(settings);
 };

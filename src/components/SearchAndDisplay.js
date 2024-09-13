@@ -3,7 +3,7 @@ import MapComponent from './MapComponent';
 import './SearchAndDisplay.css';
 import { DarkModeContext } from '../darkMode/DarkModeContext';
 
-function SearchAndDisplay({ handleSearch, error, coordinates, isLoading, cityName }) {
+function SearchAndDisplay({ handleSearch, error, coordinates, isLoading, cityName, isMapVisible }) {
     const [query, setQuery] = useState('');
     const { savedCoordinates } = useContext(DarkModeContext);
     const [lat, setLat] = useState(savedCoordinates ? savedCoordinates.latitude.toFixed(6) : '');
@@ -74,7 +74,7 @@ function SearchAndDisplay({ handleSearch, error, coordinates, isLoading, cityNam
                 </button>
             </form>
             {error && <p className="error">{error}</p>}
-            {coordinates && (
+            {coordinates && isMapVisible && (
                 <div className='container'>
                     <div style={{ marginRight: '20px' }}>
                         <h2>Koordinaten:</h2>

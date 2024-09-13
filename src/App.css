@@ -8,6 +8,12 @@
   min-width: 768px;
   overflow: auto;
 }
+.header-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px; /* Abstand zwischen den Buttons */
+}
 
 .App-logo {
   height: 40vmin;

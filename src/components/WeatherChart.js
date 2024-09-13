@@ -1,5 +1,4 @@
-import React from 'react';
-import { useContext, useMemo } from 'react';
+import React, { useContext, useMemo, useEffect, useRef } from 'react';
 import { DarkModeContext } from '../darkMode/DarkModeContext';
 import {
     Chart as ChartJS,
@@ -16,6 +15,8 @@ import {
     BarController
 } from 'chart.js';
 import { Chart as ReactChart } from 'react-chartjs-2';
+import { loadChartVisibility, saveChartVisibility } from '../services/OfflineSettingsService';
+
 
 ChartJS.register(
     CategoryScale,
@@ -33,6 +34,19 @@ ChartJS.register(
 
 function WeatherChart({ hourlyData }) {
     const { isDarkMode } = useContext(DarkModeContext);
+    const chartRef = useRef(null);
+
+    useEffect(() => {
+        const chart = chartRef.current;
+        if (chart) {
+            const chartVisibility = loadChartVisibility();
+            chart.data.datasets.forEach((dataset, index) => {
+                const isVisible = chartVisibility[dataset.label] !== false;
+                chart.setDatasetVisibility(index, isVisible);
+            });
+            chart.update();
+        }
+    }, []);
 
     const chartData = useMemo(() => {
         if (!hourlyData || !hourlyData.time) {
@@ -153,6 +167,18 @@ function WeatherChart({ hourlyData }) {
                 color: isDarkMode ? '#ffffff' : '#333333',
             },
             legend: {
+                onClick: (evt, item, legend) => {
+                    const chart = legend.chart;
+                    const index = item.datasetIndex;
+                    const isVisible = chart.isDatasetVisible(index);
+                    chart.setDatasetVisibility(index, !isVisible);
+                    chart.update();
+
+                    // Speichern der aktualisierten Sichtbarkeitseinstellungen
+                    const chartVisibility = loadChartVisibility();
+                    chartVisibility[item.text] = !isVisible;
+                    saveChartVisibility(chartVisibility);
+                },
                 labels: {
                     color: isDarkMode ? '#ffffff' : '#333333',
                 },
@@ -251,11 +277,12 @@ function WeatherChart({ hourlyData }) {
                     drawOnChartArea: false,
                     color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
                 },
-                min: 0,
-                max: chartData ? Math.ceil(chartData.scaledMaxPrecipitation) : 10,
                 afterDataLimits: (scale) => {
-                    if (chartData) {
+                    scale.min = 0;
+                    if (chartData && chartData.scaledMaxPrecipitation > 10) {
                         scale.max = Math.ceil(chartData.scaledMaxPrecipitation);
+                    } else {
+                        scale.max = 10;
                     }
                 }
             },
@@ -265,8 +292,7 @@ function WeatherChart({ hourlyData }) {
         return <div>Render Wetterdaten...</div>;
     }
 
-    return <ReactChart type='bar' data={chartData} options={options} />;
-
+    return <ReactChart ref={chartRef} type='bar' data={chartData} options={options} />;
 }
 
 export default WeatherChart;
