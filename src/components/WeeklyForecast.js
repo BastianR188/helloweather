@@ -21,6 +21,11 @@ function WeeklyForecast({ dailyData }) {
         borderRadius: '4px',
     });
 
+    const getPercent = (preipitation) => {
+        if (preipitation <= 10) { return preipitation * 10 }
+        else { return 100 }
+     }
+
     return (
         <table className="weekly-forecast">
             <thead>
@@ -84,7 +89,7 @@ function WeeklyForecast({ dailyData }) {
                 <tr>
                     <th>Regenmenge</th>
                     {Array.from({ length: dataLength }, (_, index) => (
-                        <td key={index} style={getPercentageStyle(dailyData.precipitation_probability_mean?.[index] || 0, 'to top', 'rgba(0, 0, 255, 0.5)')}>
+                        <td key={index} style={getPercentageStyle(getPercent(dailyData.precipitation_sum?.[index] || 0), 'to top', 'rgba(0, 0, 255, 0.5)')}>
                             {(dailyData.precipitation_sum?.[index] || 0).toFixed(1)} mm
                         </td>
                     ))}
