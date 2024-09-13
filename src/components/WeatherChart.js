@@ -73,6 +73,7 @@ function WeatherChart({ hourlyData }) {
         const precipitations = next24Hours(hourlyData.precipitation);
         const cloudCovers = next24Hours(hourlyData.cloudcover);
         const humidities = next24Hours(hourlyData.relativehumidity_2m);
+        const windSpeeds = next24Hours(hourlyData.windspeed_10m);
 
         const maxPrecipProbability = Math.max(...precipProbabilities);
         const maxPrecipitation = Math.max(...precipitations);
@@ -149,6 +150,7 @@ function WeatherChart({ hourlyData }) {
                 }
             ],
             windDirections,
+            windSpeeds,
             scaledMaxPrecipitation
         };
     }, [hourlyData]);
@@ -187,7 +189,8 @@ function WeatherChart({ hourlyData }) {
                 callbacks: {
                     afterBody: (context) => {
                         const index = context[0].dataIndex;
-                        return `Windrichtung: ${chartData?.windDirections[index]}°`;
+                        return `    Windrichtung: ${chartData?.windDirections[index]}°
+    Windstärke: ${chartData?.windSpeeds[index]} m/s`;
                     }
                 }
             }
