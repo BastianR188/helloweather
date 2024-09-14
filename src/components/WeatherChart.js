@@ -1,4 +1,4 @@
-import React, { useContext, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useContext, useMemo, useEffect, useRef } from 'react';
 import { DarkModeContext } from '../darkMode/DarkModeContext';
 import {
     Chart as ChartJS,
@@ -16,7 +16,7 @@ import {
 } from 'chart.js';
 import { Chart as ReactChart } from 'react-chartjs-2';
 import { loadChartVisibility, saveChartVisibility } from '../services/OfflineSettingsService';
-
+import { DateTime } from 'luxon';
 
 ChartJS.register(
     CategoryScale,
@@ -32,9 +32,27 @@ ChartJS.register(
     BarController
 );
 
-function WeatherChart({ hourlyData }) {
+function WeatherChart({ hourlyData, timezone }) {
+    const [isTooltipEnabled, setIsTooltipEnabled] = useState(window.innerWidth > 640);
     const { isDarkMode } = useContext(DarkModeContext);
     const chartRef = useRef(null);
+
+    function getWindDirectionText(degrees) {
+        if (degrees === undefined) return '';
+
+        const directions = ['Norden', 'Nordosten', 'Osten', 'Südosten', 'Süden', 'Südwest', 'West', 'Nordwest'];
+        const index = Math.round(degrees / 45) % 8;
+        return directions[index];
+    }
+    useEffect(() => {
+        const handleResize = () => {
+            console.log('Resieze')
+            setIsTooltipEnabled(window.innerWidth > 640);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         const chart = chartRef.current;
@@ -52,19 +70,29 @@ function WeatherChart({ hourlyData }) {
         if (!hourlyData || !hourlyData.time) {
             return null;
         }
-
-        const now = new Date();
+    
+        const now = DateTime.now().setZone(timezone);
         const currentHourIndex = hourlyData.time.findIndex(time => {
-            const dateTime = new Date(time);
-            return dateTime.getHours() === now.getHours() && dateTime.getDate() === now.getDate();
+            const dateTime = DateTime.fromISO(time).setZone(timezone);
+            return dateTime >= now;
+        });
+    
+        const next24Hours = (arr) => {
+            if (!arr) return [];
+            const startIndex = currentHourIndex >= 0 ? currentHourIndex : 0;
+            return arr.slice(startIndex, startIndex + 24);
+        };
+    
+        const times = next24Hours(hourlyData.time);
+        const labels = times.map((time, index) => {
+            const date = DateTime.fromISO(time).setZone(timezone);
+            if (index === 0 || date.hour === 0) {
+                return date.toFormat('dd.MM HH:mm');
+            } else {
+                return date.toFormat('HH:mm');
+            }
         });
 
-        const next24Hours = (arr) => arr ? arr.slice(currentHourIndex, currentHourIndex + 24) : [];
-
-        const labels = next24Hours(hourlyData.time).map(time => {
-            const date = new Date(time);
-            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        });
 
         const temperatures = next24Hours(hourlyData.temperature_2m);
         const precipProbabilities = next24Hours(hourlyData.precipitation_probability);
@@ -153,7 +181,7 @@ function WeatherChart({ hourlyData }) {
             windSpeeds,
             scaledMaxPrecipitation
         };
-    }, [hourlyData]);
+    }, [hourlyData, timezone]);
 
     const options = useMemo(() => ({
         responsive: true,
@@ -165,7 +193,7 @@ function WeatherChart({ hourlyData }) {
         plugins: {
             title: {
                 display: true,
-                text: 'Wetter Vorhersage für die nächsten 24 Stunden',
+                text: `Wetter Vorhersage für die nächsten 24 Stunden (${timezone})`,
                 color: isDarkMode ? '#ffffff' : '#333333',
             },
             legend: {
@@ -176,7 +204,6 @@ function WeatherChart({ hourlyData }) {
                     chart.setDatasetVisibility(index, !isVisible);
                     chart.update();
 
-                    // Speichern der aktualisierten Sichtbarkeitseinstellungen
                     const chartVisibility = loadChartVisibility();
                     chartVisibility[item.text] = !isVisible;
                     saveChartVisibility(chartVisibility);
@@ -186,13 +213,16 @@ function WeatherChart({ hourlyData }) {
                 },
             },
             tooltip: {
+                enabled: isTooltipEnabled,
                 callbacks: {
                     afterBody: (context) => {
                         const index = context[0].dataIndex;
-                        return `    Windrichtung: ${chartData?.windDirections[index]}°
+                        const windDirection = chartData?.windDirections[index];
+                        const windDirectionText = getWindDirectionText(windDirection);
+                        return `    Windrichtung: ${windDirection}° ${windDirectionText}
     Windstärke: ${chartData?.windSpeeds[index]} m/s`;
                     }
-                }
+                },
             }
         },
         scales: {
@@ -220,6 +250,18 @@ function WeatherChart({ hourlyData }) {
                 },
                 ticks: {
                     color: isDarkMode ? '#ffffff' : '#333333',
+                    callback: function (value, index, values) {
+                        if (this.chart.config.type === 'line' && this.chart.config.data.datasets[0].label === 'Temperatur') {
+                            return Math.round(value); // Runde auf ganze Zahlen für Temperatur
+                        }
+                        return value;
+                    }
+                },
+                afterDataLimits: (scale) => {
+                    const dataMax = scale.max;
+                    const dataMin = scale.min;
+                    const range = dataMax - dataMin;
+                    scale.max = Math.ceil(dataMax + range * 0.1); // 10% mehr Platz oben
                 },
                 grid: {
                     color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
@@ -254,6 +296,13 @@ function WeatherChart({ hourlyData }) {
                 },
                 ticks: {
                     color: isDarkMode ? '#ffffff' : '#333333',
+
+                },
+                afterDataLimits: (scale) => {
+                    const dataMax = scale.max;
+                    const dataMin = scale.min;
+                    const range = dataMax - dataMin;
+                    scale.max = Math.ceil(dataMax + range * 0.1); // 10% mehr Platz oben
                 },
                 grid: {
                     drawOnChartArea: false,
@@ -290,7 +339,8 @@ function WeatherChart({ hourlyData }) {
                 }
             },
         },
-    }), [isDarkMode, chartData]);
+    }), [isDarkMode, chartData, isTooltipEnabled, timezone]);
+
     if (!chartData) {
         return <div>Render Wetterdaten...</div>;
     }

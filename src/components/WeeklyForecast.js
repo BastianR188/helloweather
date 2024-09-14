@@ -1,10 +1,26 @@
 import React from 'react';
+import { useMemo } from 'react';
 import './WeeklyForecast.css'; // Stellen Sie sicher, dass Sie diese CSS-Datei erstellen
 import { getWeatherIcon } from '../services/getWeatherIcon';
 
 function WeeklyForecast({ dailyData }) {
     const days = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+    const dataLength = dailyData.time.length;
 
+    const maxPrecipitation = useMemo(() => {
+        if (!dailyData.precipitation_sum) return 10;
+        const maxValue = Math.max(...dailyData.precipitation_sum);
+        return Math.max(maxValue, 10);
+    }, [dailyData.precipitation_sum]);
+
+    const getPercentageStyle = (percentage, direction, color) => ({
+        background: `linear-gradient(${direction}, ${color} ${percentage}%, transparent ${percentage}%)`,
+        borderRadius: '4px',
+    });
+
+    const getPercent = (precipitation) => {
+        return (precipitation / maxPrecipitation) * 100;
+    };
     const getWindDirection = (degrees) => {
         const directions = ['N', 'NO', 'O', 'SO', 'S', 'SW', 'W', 'NW'];
         return directions[Math.round(degrees / 45) % 8];
@@ -14,17 +30,8 @@ function WeeklyForecast({ dailyData }) {
         return <p>Keine Datensätze gefunden</p>;
     }
 
-    const dataLength = dailyData.time.length;
 
-    const getPercentageStyle = (percentage, direction, color) => ({
-        background: `linear-gradient(${direction}, ${color} ${percentage}%, transparent ${percentage}%)`,
-        borderRadius: '4px',
-    });
 
-    const getPercent = (preipitation) => {
-        if (preipitation <= 10) { return preipitation * 10 }
-        else { return 100 }
-     }
 
     return (
         <table className="weekly-forecast">
@@ -55,19 +62,19 @@ function WeeklyForecast({ dailyData }) {
                 <tr>
                     <th>Temperatur</th>
                     {Array.from({ length: dataLength }, (_, index) => (
-                        <td key={index}>{(dailyData.temperature_2m_mean?.[index] || 0).toFixed(1)}°C</td>
+                        <td key={index}>{Math.round(dailyData.temperature_2m_mean?.[index] || 0)}°C</td>
                     ))}
                 </tr>
                 <tr>
                     <th>Hoch</th>
                     {Array.from({ length: dataLength }, (_, index) => (
-                        <td key={index}>{(dailyData.temperature_2m_max?.[index] || 0).toFixed(1)}°C</td>
+                        <td key={index}>{Math.round(dailyData.temperature_2m_max?.[index] || 0)}°C</td>
                     ))}
                 </tr>
                 <tr>
                     <th>Niedrig</th>
                     {Array.from({ length: dataLength }, (_, index) => (
-                        <td key={index}>{(dailyData.temperature_2m_min?.[index] || 0).toFixed(1)}°C</td>
+                        <td key={index}>{Math.round(dailyData.temperature_2m_min?.[index] || 0)}°C</td>
                     ))}
                 </tr>
                 <tr>

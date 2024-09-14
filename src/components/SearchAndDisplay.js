@@ -68,7 +68,6 @@ function SearchAndDisplay({ handleSearch, error, coordinates, isLoading, cityNam
                     placeholder="Stadt, PLZ oder Adresse eingeben"
                     disabled={isLoading}
                 />
-
                 <button type="submit" disabled={isLoading}>
                     Suchen
                 </button>

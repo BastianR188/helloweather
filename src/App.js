@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { DateTime } from 'luxon';
 import SearchAndDisplay from './components/SearchAndDisplay';
 import WeatherChart from './components/WeatherChart';
 import WeeklyForecast from './components/WeeklyForecast';
@@ -10,8 +11,8 @@ import DarkModeToggle from './darkMode/DarkModeToggle';
 import { saveCoordinates, loadCoordinates, saveCityName, loadCityName } from './services/OfflineSettingsService';
 import { getWeatherIcon } from './services/getWeatherIcon';
 import { loadMapVisibility, saveMapVisibility } from './services/OfflineSettingsService';
-
-
+import WeatherBackground from './components/WeatherBackground';
+import axios from 'axios';
 
 function AppContent() {
   const { savedCoordinates } = useContext(DarkModeContext);
@@ -23,6 +24,15 @@ function AppContent() {
   const [cityName, setCityName] = useState('');
   const [weatherIcon, setWeatherIcon] = useState('');
   const [isMapVisible, setIsMapVisible] = useState(loadMapVisibility());
+  const [timezone, setTimezone] = useState('UTC');
+
+  const [currentWeather, setCurrentWeather] = useState({
+    cloudCover: 0,
+    precipAmount: 0,
+    solarRadiation: 0,
+    windSpeed: 0,
+    windDirection: 0,
+  });
 
   useEffect(() => {
     const handlePageLoad = async () => {
@@ -30,25 +40,19 @@ function AppContent() {
       const savedCityName = loadCityName();
       if (savedCityName) {
         handleSearch(null, null, null, savedCityName);
-        setCityName(savedCityName);
       } else if (coord) {
         handleSearch(null, coord.latitude, coord.longitude, null);
       }
     };
-    handlePageLoad(); // Führt die Funktion beim ersten Rendern aus
-    window.addEventListener('load', handlePageLoad);
-    // Aufräumfunktion
-    return () => {
-      window.removeEventListener('load', handlePageLoad);
-    };
-  }, []); // Leeres Abhängigkeitsarray bedeutet, dass dieser Effekt nur einmal beim Mounten ausgeführt wird
+    handlePageLoad();
+  }, []);
 
   const toggleMapVisibility = () => {
     const newVisibility = !isMapVisible;
     setIsMapVisible(newVisibility);
     saveMapVisibility(newVisibility);
   };
-  
+
   const handleSearch = async (e, lat, lon, query) => {
     if (e) e.preventDefault();
     setIsLoading(true);
@@ -64,19 +68,45 @@ function AppContent() {
       } else {
         throw new Error('Keine gültigen Suchparameter');
       }
+
+      // Zeitzone basierend auf Koordinaten ermitteln
+      const tz = await fetchTimezone(coords.latitude, coords.longitude);
+      setTimezone(tz);
       setCoordinates(coords);
       setCityName(newCityName);
       saveCoordinates(coords);
       saveCityName(newCityName);
+
       const weather = await getWeatherData(coords.latitude, coords.longitude);
-      setWeatherData(weather.hourly);
-      setDailyData(weather.daily);
+      console.log(weather)
+      // Wetterdaten mit der korrekten Zeitzone verarbeiten
+      const processedHourlyData = processHourlyData(weather.hourly, tz);
+      const processedDailyData = processDailyData(weather.daily, tz);
+
+      setWeatherData(processedHourlyData);
+      setDailyData(processedDailyData);
+
+      // Aktuelle Stunde ermitteln
+      const currentHour = DateTime.now().setZone(tz).hour;
+      
+      // Aktuelle Wetterdaten setzen
+      setCurrentWeather({
+        cloudCover: processedHourlyData.cloudcover[currentHour],
+        precipAmount: processedHourlyData.precipitation[currentHour],
+        solarRadiation: processedHourlyData.direct_radiation[currentHour],
+        windSpeed: processedHourlyData.windspeed_10m[currentHour],
+        windDirection: processedHourlyData.winddirection_10m[currentHour],
+      });
+
       const newIcon = getWeatherIcon(
         weather.daily.cloudcover_mean[0],
         weather.daily.precipitation_probability_mean[0],
         weather.daily.temperature_2m_mean[0],
-        weather.daily.precipitation_sum[0]
+        weather.daily.precipitation_sum[0],
+        weather.daily.weathercode[0]
       );
+      
+      
       setWeatherIcon(newIcon);
       setError(null);
     } catch (err) {
@@ -84,15 +114,70 @@ function AppContent() {
       setCoordinates(null);
       setWeatherData(null);
       setDailyData(null);
+      setCurrentWeather({
+        cloudCover: 0,
+        precipAmount: 0,
+        solarRadiation: 0,
+        windSpeed: 0,
+        windDirection: 0,
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
+
+
+  const fetchTimezone = async (latitude, longitude) => {
+    const url = `https://timeapi.io/api/TimeZone/coordinate?latitude=${latitude}&longitude=${longitude}`;
+
+    try {
+      const response = await axios.get(url);
+      if (response.data && response.data.timeZone) {
+        return response.data.timeZone;
+      } else {
+        console.error('Unerwartetes Antwortformat:', response.data);
+        return 'UTC'; // Fallback auf UTC
+      }
+    } catch (error) {
+      console.error('Fehler beim Abrufen der Zeitzone:', error);
+      return 'UTC'; // Fallback auf UTC im Fehlerfall
+    }
+  };
+
+
+
+  const processHourlyData = (hourlyData, timezone) => {
+    return {
+      ...hourlyData,
+      time: hourlyData.time.map(time =>
+        DateTime.fromISO(time).setZone(timezone).toFormat('yyyy-MM-dd\'T\'HH:mm')
+      )
+    };
+  };
+
+  const processDailyData = (dailyData, timezone) => {
+    return {
+      ...dailyData,
+      time: dailyData.time.map(time =>
+        DateTime.fromISO(time).setZone(timezone).toFormat('yyyy-MM-dd')
+      )
+    };
+  };
+
   return (
     <div className="App">
+      <WeatherBackground
+        weatherIcon={weatherIcon}
+        cloudCover={currentWeather.cloudCover}
+        precipAmount={currentWeather.precipAmount}
+        solarRadiation={currentWeather.solarRadiation}
+        windSpeed={currentWeather.windSpeed}
+        windDirection={currentWeather.windDirection}
+        timezone={timezone}
+      />
       <div className='header'>
-        <div className='max_width'>
+        <div className='max_width header_small'>
           <h1>Hello Weather</h1>
           <div className="header-controls">
             <DarkModeToggle />
@@ -116,9 +201,9 @@ function AppContent() {
         weatherData && dailyData && (
           <div className={isLoading ? 'hidden' : 'max_width'}>
             <h2>Aktuelles Wetter: <span>{weatherIcon}</span> {cityName}</h2>
-            <WeatherChart hourlyData={weatherData} />
+            <WeatherChart hourlyData={weatherData} timezone={timezone} />
             <h2>7-Tage-Vorhersage:</h2>
-            <WeeklyForecast dailyData={dailyData} />
+            <WeeklyForecast dailyData={dailyData} timezone={timezone} />
           </div>
         )
       )}

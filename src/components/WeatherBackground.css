@@ -1,0 +1,142 @@
+/* WeatherBackground.css */
+.weather-background {
+    position: fixed;
+    top: -5%;
+    left: -5%;
+    width: 110%;
+    height: 110%;
+    z-index: -1;
+    overflow: hidden;
+    transition: background-color 0.5s ease;
+}
+
+
+.clear-sky.day { background: linear-gradient(to bottom, #87CEEB, #E0F6FF); }
+.clear-sky.night { background: linear-gradient(to bottom, #191970, #483D8B); }
+.partly-cloudy.day { background: linear-gradient(to bottom, #87CEEB, #C0E0FF); }
+.partly-cloudy.night { background: linear-gradient(to bottom, #191970, #4B0082); }
+.mostly-cloudy.day { background: linear-gradient(to bottom, #A0A0A0, #C0C0C0); }
+.mostly-cloudy.night { background: linear-gradient(to bottom, #2F4F4F, #708090); }
+.overcast.day { background: #808080; }
+.overcast.night { background: #404040; }
+
+.celestial-body {
+    position: absolute;
+    border-radius: 50%;
+    transition: left 0.5s ease;
+    top: 10%;
+}
+
+.sun {
+    width: 80px;
+    height: 80px;
+    background: radial-gradient(circle, rgba(255,255,0,0.8) 0%, rgba(255,165,0,0.8) 100%);
+    box-shadow: 0 0 50px rgba(255,255,0,0.5);
+}
+
+.moon {
+    width: 60px;
+    height: 60px;
+    background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(220,220,220,0.8) 100%);
+    box-shadow: 0 0 30px rgba(255,255,255,0.3);
+}
+
+.weather-background.night.light-night {
+    background: linear-gradient(to bottom, #2F4F4F, #708090);
+    color: #ffffff;
+}
+
+
+.clouds {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.clouds::before,
+.clouds::after {
+    content: '';
+    position: absolute;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    animation: float linear infinite;
+    animation-duration: var(--wind-speed, 60s);
+}
+
+.clouds::before {
+    width: 180px;
+    height: 50px;
+    top: 50px;
+    left: -200px;
+}
+
+.clouds::after {
+    width: 250px;
+    height: 80px;
+    top: 150px;
+    left: -300px;
+}
+
+@keyframes float {
+    0% { transform: translateX(-100%) rotate(var(--wind-direction, 0deg)); }
+    100% { transform: translateX(100vw) rotate(var(--wind-direction, 0deg)); }
+}
+
+.rain {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.raindrop {
+    position: absolute;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.1), rgba(255,255,255,0.5));
+    width: 1px;
+    height: 15px;
+    animation: raindrop linear infinite;
+    animation-duration: var(--rain-speed, 2s);
+}
+
+@keyframes raindrop {
+    0% { transform: translateY(-100%) rotate(var(--rain-angle, 0deg)); }
+    100% { transform: translateY(100vh) rotate(var(--rain-angle, 0deg)); }
+}
+
+.rain.light .raindrop { opacity: 0.3; height: 10px; }
+.rain.moderate .raindrop { opacity: 0.5; height: 15px; }
+.rain.heavy .raindrop { opacity: 0.7; height: 20px; }
+.rain.extreme .raindrop { opacity: 0.9; height: 25px; }
+
+
+.thunderstorm .lightning {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.2);
+    opacity: 0;
+    animation: lightning 5s infinite;
+}
+
+@keyframes lightning {
+    0%, 95%, 100% { opacity: 0; }
+    96%, 99% { opacity: 0.5; }
+}
+
+/* Dark mode adjustments */
+.dark-mode .weather-background {
+    filter: brightness(0.7);
+}
+
+.dark-mode .celestial-body {
+    filter: brightness(0.8);
+}
+
+.dark-mode .clouds::before,
+.dark-mode .clouds::after {
+    background: rgba(200, 200, 200, 0.3);
+}
