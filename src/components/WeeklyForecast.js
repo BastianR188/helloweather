@@ -53,7 +53,8 @@ function WeeklyForecast({ dailyData }) {
                                 dailyData.cloudcover_mean?.[index] || 0,
                                 dailyData.precipitation_probability_mean?.[index] || 0,
                                 dailyData.temperature_2m_mean?.[index] || 0,
-                                dailyData.precipitation_sum?.[index] || 0
+                                dailyData.precipitation_sum?.[index] || 0,
+                                dailyData.weathercode?.[index] || 0 
                             )}
                         </td>
                     ))}

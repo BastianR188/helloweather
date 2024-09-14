@@ -78,7 +78,6 @@ function AppContent() {
       saveCityName(newCityName);
 
       const weather = await getWeatherData(coords.latitude, coords.longitude);
-      console.log(weather)
       // Wetterdaten mit der korrekten Zeitzone verarbeiten
       const processedHourlyData = processHourlyData(weather.hourly, tz);
       const processedDailyData = processDailyData(weather.daily, tz);

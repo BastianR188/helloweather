@@ -54,6 +54,15 @@ const WeatherBackground = ({ weatherIcon, cloudCover, precipAmount, solarRadiati
         return hour >= 6 && hour < 18;
     };
 
+    const getSolarPulseIntensity = () => {
+        // Annahme: solarRadiation ist in W/m²
+        // Wir können die Intensität basierend auf verschiedenen Schwellenwerten anpassen
+        if (solarRadiation > 800) return 'high';
+        if (solarRadiation > 400) return 'medium';
+        if (solarRadiation > 200) return 'low';
+        return 'none';
+    };
+
     const getCloudCover = () => {
         if (cloudCover < 25) return 'clear';
         if (cloudCover < 50) return 'partly-cloudy';
@@ -90,11 +99,11 @@ const WeatherBackground = ({ weatherIcon, cloudCover, precipAmount, solarRadiati
     };
 
     return (
-            <div className={`weather-background ${getBackgroundClass()} ${getCloudCover()}`}>
-                <div 
-                    className={`celestial-body ${isSunVisible() ? 'sun' : 'moon'}`}
-                    style={{ left: getCelestialBodyPosition(), top: '10%' }}
-                ></div>
+        <div className={`weather-background ${getBackgroundClass()} ${getCloudCover()}`}>
+        <div 
+            className={`celestial-body ${isSunVisible() ? 'sun' : 'moon'} solar-pulse-${getSolarPulseIntensity()}`}
+            style={{ left: getCelestialBodyPosition(), top: '10%' }}
+        ></div>
             <div className={`clouds ${getWindClass()}`} style={{ transform: getWindDirection() }}>
                 {[...Array(10)].map((_, i) => (
                     <div key={i} className="cloud" style={{

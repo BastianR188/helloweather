@@ -13,7 +13,7 @@ export const getWeatherIcon = (cloudCover, precipProb, temp, precipAmount, weath
     }
 
     // Regen
-    if (weatherCode >= 61 && weatherCode <= 67 || precipProb > 40) {
+    if (weatherCode >= 61 && weatherCode <= 67 || precipProb > 33) {
         if (precipAmount > 10) return '🌧️';  // Starker Regen
         if (cloudCover > 80) return '🌦️';  // Mäßiger Regen
         return '🌂';  // Leichter Regen oder Schauer
