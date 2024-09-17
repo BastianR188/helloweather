@@ -70,19 +70,19 @@ function WeatherChart({ hourlyData, timezone }) {
         if (!hourlyData || !hourlyData.time) {
             return null;
         }
-    
+
         const now = DateTime.now().setZone(timezone);
         const currentHourIndex = hourlyData.time.findIndex(time => {
             const dateTime = DateTime.fromISO(time).setZone(timezone);
             return dateTime >= now;
         });
-    
+
         const next24Hours = (arr) => {
             if (!arr) return [];
             const startIndex = currentHourIndex >= 0 ? currentHourIndex : 0;
             return arr.slice(startIndex, startIndex + 24);
         };
-    
+
         const times = next24Hours(hourlyData.time);
         const labels = times.map((time, index) => {
             const date = DateTime.fromISO(time).setZone(timezone);
@@ -103,6 +103,7 @@ function WeatherChart({ hourlyData, timezone }) {
         const humidities = next24Hours(hourlyData.relativehumidity_2m);
         const windSpeeds = next24Hours(hourlyData.windspeed_10m);
 
+        const maxSolarRadiations = Math.max(...solarRadiations);
         const maxPrecipProbability = Math.max(...precipProbabilities);
         const maxPrecipitation = Math.max(...precipitations);
         const scaledMaxPrecipitation = maxPrecipitation * (100 / maxPrecipProbability);
@@ -179,7 +180,8 @@ function WeatherChart({ hourlyData, timezone }) {
             ],
             windDirections,
             windSpeeds,
-            scaledMaxPrecipitation
+            scaledMaxPrecipitation,
+            maxSolarRadiations
         };
     }, [hourlyData, timezone]);
 
@@ -296,19 +298,20 @@ function WeatherChart({ hourlyData, timezone }) {
                 },
                 ticks: {
                     color: isDarkMode ? '#ffffff' : '#333333',
-
-                },
-                afterDataLimits: (scale) => {
-                    const dataMax = scale.max;
-                    const dataMin = scale.min;
-                    const range = dataMax - dataMin;
-                    scale.max = Math.ceil(dataMax + range * 0.1); // 10% mehr Platz oben
                 },
                 grid: {
                     drawOnChartArea: false,
                     color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
                 },
-                min: 0,
+                afterDataLimits: (scale) => {
+                    console.log("afterDataLimits wird aufgerufen");
+                    scale.min = 0;
+                    if (chartData.maxSolarRadiations > 800) {
+                        scale.max = Math.ceil(chartData.maxSolarRadiations * 1.1);
+                    } else {
+                        scale.max = 800;
+                    }
+                }
             },
             'y-precip': {
                 type: 'linear',
