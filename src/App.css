@@ -95,13 +95,26 @@ button:disabled {
   display: none;
 }
 
+.header_small {
+  max-width: 1024px;
+  margin: 0 auto;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
 @media (max-width: 1024px) {
 
   .header {
     box-shadow: none;
   }
 
+  .header.dark-mode {
+    box-shadow: none;
+  }
+
   .header_small {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding-bottom: 20px;
+
   }
 }

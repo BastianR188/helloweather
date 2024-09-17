@@ -2,6 +2,8 @@ import React, { useState, useEffect, useContext } from 'react';
 import MapComponent from './MapComponent';
 import './SearchAndDisplay.css';
 import { DarkModeContext } from '../darkMode/DarkModeContext';
+import { CSSTransition } from 'react-transition-group';
+
 
 function SearchAndDisplay({ handleSearch, error, coordinates, isLoading, cityName, isMapVisible }) {
     const [query, setQuery] = useState('');
@@ -73,38 +75,49 @@ function SearchAndDisplay({ handleSearch, error, coordinates, isLoading, cityNam
                 </button>
             </form>
             {error && <p className="error">{error}</p>}
-            {coordinates && isMapVisible && (
-                <div className='container'>
-                    <div style={{ marginRight: '20px' }}>
-                        <h2>Koordinaten:</h2>
-                        <p>Breitengrad:
-                            <input
-                                className='input_coord'
-                                type="number"
-                                value={lat}
-                                onChange={handleLatChange}
-                                placeholder="Breitengrad"
-                                step="any"
-                                disabled={isLoading}
+            {coordinates && (
+                <CSSTransition
+                    in={isMapVisible}
+                    timeout={300}
+                    classNames="map"
+                    unmountOnExit
+                >
+                    <div className="map-container">
+                        <div className='container'>
+                            <div style={{ marginRight: '20px' }}>
+                                <h2>Koordinaten:</h2>
+                                <p>Breitengrad:
+                                    <input
+                                        className='input_coord'
+                                        type="number"
+                                        value={lat}
+                                        onChange={handleLatChange}
+                                        placeholder="Breitengrad"
+                                        step="any"
+                                        disabled={isLoading}
+                                    />
+                                </p>
+                                <p>Längengrad:
+                                    <input
+                                        className='input_coord'
+                                        type="number"
+                                        value={lon}
+                                        onChange={handleLonChange}
+                                        placeholder="Längengrad"
+                                        step="any"
+                                        disabled={isLoading}
+                                    />
+                                </p>
+                            </div>
+                            <MapComponent
+                                latitude={coordinates.latitude}
+                                longitude={coordinates.longitude}
+                                onLocationChange={handleLocationChange}
                             />
-                        </p>
-                        <p>Längengrad:
-                            <input
-                                className='input_coord'
-                                type="number"
-                                value={lon}
-                                onChange={handleLonChange}
-                                placeholder="Längengrad"
-                                step="any"
-                                disabled={isLoading}
-                            /></p>
+                        </div>
                     </div>
-                    <MapComponent
-                        latitude={coordinates.latitude}
-                        longitude={coordinates.longitude}
-                        onLocationChange={handleLocationChange}
-                    />
-                </div>
+                </CSSTransition>
+
             )}
         </div>
     );

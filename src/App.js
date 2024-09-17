@@ -176,12 +176,12 @@ function AppContent() {
         timezone={timezone}
       />
       <div className='header'>
-        <div className='max_width header_small'>
+        <div className='header_small'>
           <h1>Hello Weather</h1>
           <div className="header-controls">
             <DarkModeToggle />
             <button onClick={toggleMapVisibility}>
-              {isMapVisible ? 'Karte ausblenden' : 'Karte einblenden'}
+              {isMapVisible ? 'Koordinaten ausblenden' : 'Koordinaten einblenden'}
             </button>
           </div>
           <SearchAndDisplay

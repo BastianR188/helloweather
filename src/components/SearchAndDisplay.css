@@ -2,7 +2,6 @@
     width: 100%;
 }
 
-
 .input {
     width: 40%;
     margin: 16px 16px 0 0;
@@ -17,4 +16,32 @@
     display: flex;
     justify-content: center;
     padding: 16px;
+}
+
+.map-container {
+    overflow: hidden;
+}
+
+.map-enter {
+    max-height: 0;
+    opacity: 0;
+}
+
+.map-enter-active {
+    max-height: 1000px;
+    /* Passen Sie diesen Wert an die maximale Höhe Ihres Inhalts an */
+    opacity: 1;
+    transition: max-height 300ms ease-in-out, opacity 300ms ease-in-out;
+}
+
+.map-exit {
+    max-height: 1000px;
+    /* Sollte der gleiche Wert wie oben sein */
+    opacity: 1;
+}
+
+.map-exit-active {
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 300ms ease-in-out, opacity 300ms ease-in-out;
 }
