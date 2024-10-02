@@ -94,22 +94,12 @@ const WeatherBackground = ({ weatherIcon, cloudCover, precipAmount, solarRadiati
         return 'strong';
     };
 
-
     return (
-        <div className={`weather-background ${getBackgroundClass()} ${getCloudCover()}`}>
+        <div>
         <div 
             className={`celestial-body ${isSunVisible() ? 'sun' : 'moon'} solar-pulse-${getSolarPulseIntensity()}`}
             style={{ left: getCelestialBodyPosition(), top: '10%' }}
         ></div>
-            <div className={`clouds ${getWindClass()}`}>
-                {[...Array(10)].map((_, i) => (
-                    <div key={i} className="cloud" style={{
-                        left: `${Math.random() * 100}%`,
-                        top: `${Math.random() * 50}%`,
-                        animationDelay: `${Math.random() * 50}s`
-                    }}></div>
-                ))}
-            </div>
             {getRainIntensity() !== 'none' && (
                 <div 
                     className={`rain ${getRainIntensity()}`} 
