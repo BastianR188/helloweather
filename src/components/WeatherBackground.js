@@ -83,9 +83,13 @@ const WeatherBackground = ({ weatherIcon, cloudCover, precipAmount, solarRadiati
         const angle = (windSpeed / 10) * maxAngle; // 10 m/s wind speed = max angle
         return windDirection > 180 ? -angle : angle; // Negative angle if wind is coming from left
     };
-
+    
+    const getWindFactor = () => {
+        return (windSpeed / 10) * (windDirection > 180 ? -1 : 1);
+    };
+    
     const getRainSpeed = () => {
-        return Math.max(2, Math.min(0.5, 10 / windSpeed)); // Inverse relationship with wind speed
+        return Math.max(2, Math.min(10, 15 - windSpeed)); // Inverse relationship with wind speed
     };
 
     const getWindClass = () => {
@@ -95,7 +99,7 @@ const WeatherBackground = ({ weatherIcon, cloudCover, precipAmount, solarRadiati
     };
 
     return (
-        <div>
+        <div className='weather-background'>
         <div 
             className={`celestial-body ${isSunVisible() ? 'sun' : 'moon'} solar-pulse-${getSolarPulseIntensity()}`}
             style={{ left: getCelestialBodyPosition(), top: '10%' }}
@@ -105,14 +109,14 @@ const WeatherBackground = ({ weatherIcon, cloudCover, precipAmount, solarRadiati
                     className={`rain ${getRainIntensity()}`} 
                     style={{ 
                         '--rain-angle': `${getRainAngle()}deg`,
-                        '--rain-speed': `${getRainSpeed()}s`
+                        '--rain-speed': `${getRainSpeed()}s`,
+                        '--wind-factor': getWindFactor()
                     }}
                 >
                     {[...Array(100)].map((_, i) => (
-                        <div key={i} className="raindrop" style={{
-                            left: `${Math.random() * 100}%`,
-                            animationDelay: `${Math.random() * 5}s`,
-                            animationDuration: `var(--rain-speed)`
+                        <div key={i} className="raindrop"  style={{
+                            '--start-position': Math.random(),
+                            animationDelay: `${Math.random() * 5}s`
                         }}></div>
                     ))}
                 </div>
