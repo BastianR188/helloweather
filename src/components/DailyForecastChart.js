@@ -1,5 +1,5 @@
-import React, { useState, useContext, useMemo, useEffect, useRef } from 'react';
-import { DarkModeContext } from '../darkMode/DarkModeContext';
+import React, { useState, useEffect, useContext, useMemo, useRef } from 'react';
+import { DateTime } from 'luxon';
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -15,8 +15,9 @@ import {
     BarController
 } from 'chart.js';
 import { Chart as ReactChart } from 'react-chartjs-2';
+import { DarkModeContext } from '../darkMode/DarkModeContext';
 import { loadChartVisibility, saveChartVisibility } from '../services/OfflineSettingsService';
-import { DateTime } from 'luxon';
+
 
 ChartJS.register(
     CategoryScale,
@@ -32,10 +33,11 @@ ChartJS.register(
     BarController
 );
 
-function WeatherChart({ hourlyData, timezone, selectedDay }) {
+function DailyForecastChart({ selectedDay = 0, hourlyData, timezone }) {
     const [isTooltipEnabled, setIsTooltipEnabled] = useState(window.innerWidth > 640);
     const { isDarkMode } = useContext(DarkModeContext);
     const chartRef = useRef(null);
+    
 
     function getWindDirectionText(degrees) {
         if (degrees === undefined) return '';
@@ -71,37 +73,28 @@ function WeatherChart({ hourlyData, timezone, selectedDay }) {
             return null;
         }
 
+        // Berechne das Datum für den ausgewählten Tag
         const now = DateTime.now().setZone(timezone);
         const targetDate = now.plus({ days: selectedDay }).startOf('day');
-        const currentHourIndex = hourlyData.time.findIndex(time => {
+        
+        // Finde den Index für den Beginn des ausgewählten Tages
+        const startIndex = hourlyData.time.findIndex(time => {
             const dateTime = DateTime.fromISO(time).setZone(timezone);
-            if ( selectedDay == null){
-            return dateTime >= now;}
-            else return dateTime >= targetDate;
+            return dateTime >= targetDate;
         });
 
         const next24Hours = (arr) => {
             if (!arr) return [];
-                const startIndex = currentHourIndex >= 0 ? currentHourIndex : 0;
             return arr.slice(startIndex, startIndex + 24);
         };
 
         const times = next24Hours(hourlyData.time);
-        const labels = times.map((time, index) => {
+        const labels = times.map(time => {
             const date = DateTime.fromISO(time).setZone(timezone);
-            if (index === 0 || date.hour === 0) {
-                return date.toFormat('dd.MM HH:mm');
-            } else {
-                return date.toFormat('HH:mm');
-            }
+            return date.toFormat('HH:mm');
         });
 
-
-
-
-
-
-
+        // Extrahiere die Daten für die nächsten 24 Stunden ab dem ausgewählten Tag
         const temperatures = next24Hours(hourlyData.temperature_2m);
         const precipProbabilities = next24Hours(hourlyData.precipitation_probability);
         const solarRadiations = next24Hours(hourlyData.direct_radiation);
@@ -111,97 +104,23 @@ function WeatherChart({ hourlyData, timezone, selectedDay }) {
         const humidities = next24Hours(hourlyData.relativehumidity_2m);
         const windSpeeds = next24Hours(hourlyData.windspeed_10m);
 
-        const maxSolarRadiations = Math.max(...solarRadiations);
-        const maxPrecipProbability = Math.max(...precipProbabilities);
-        const maxPrecipitation = Math.max(...precipitations);
-        const scaledMaxPrecipitation = maxPrecipitation * (100 / maxPrecipProbability);
-
         return {
             labels,
             datasets: [
                 {
-                    type: 'line',
-                    label: 'Temperatur (°C)',
-                    data: temperatures,
-                    borderColor: 'rgb(255, 99, 132)',
-                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                    yAxisID: 'y-temp',
-                    order: 1,
-                    tension: 0.4
+                  type: 'line',
+                  label: 'Temperatur (°C)',
+                  data: temperatures,
+                  borderColor: 'rgb(255, 99, 132)',
+                  backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                  yAxisID: 'y-temp',
                 },
-                {
-                    type: 'line',
-                    label: 'Luftfeuchtigkeit (%)',
-                    data: humidities,
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                    yAxisID: 'y-percent',
-                    order: 2,
-                    tension: 0.4,
-                    pointRadius: 0,
-                },
-                {
-                    type: 'line',
-                    label: 'Regenwahrscheinlichkeit (%)',
-                    data: precipProbabilities,
-                    borderColor: 'rgba(53, 162, 235, 1)',
-                    backgroundColor: 'rgba(53, 162, 235, 0.2)',
-                    yAxisID: 'y-percent',
-                    order: 3,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 0,
-                },
-                // {
-                //     type: 'line',
-                //     label: 'Sonneneinstrahlung (W/m²)',
-                //     data: solarRadiations,
-                //     borderColor: 'rgba(255, 206, 86, 1)',
-                //     backgroundColor: 'rgba(255, 206, 86, 0.2)',
-                //     fill: true,
-                //     yAxisID: 'y-solar',
-                //     order: 4,
-                //     tension: 0.4,
-                //     pointRadius: 0,
-                // },
-                {
-                    type: 'bar',
-                    label: 'Regenmenge (mm)',
-                    data: precipitations,
-                    borderColor: 'rgba(0, 0, 255, 1)',
-                    backgroundColor: 'rgba(0, 0, 255, 0.5)',
-                    yAxisID: 'y-precip',
-                    order: 5,
-                },
-                {
-                    type: 'line',
-                    label: 'Wolkenbedeckung (%)',
-                    data: cloudCovers,
-                    borderColor: 'rgba(128, 128, 128, 1)',
-                    backgroundColor: 'rgba(128, 128, 128, 0.2)',
-                    fill: true,
-                    yAxisID: 'y-percent',
-                    order: 6,
-                    tension: 0.4,
-                    pointRadius: 0,
-                }
-            ],
+              ],
+              
             windDirections,
             windSpeeds,
-            scaledMaxPrecipitation,
-            // maxSolarRadiations
         };
-
     }, [hourlyData, timezone, selectedDay]);
-
-    useEffect(() => {
-        const chart = chartRef.current;
-        if (chart && chartData) {
-            chart.data = chartData;
-            chart.update();
-            console.log('Chart updated due to selectedDay change:', selectedDay);
-        }
-    }, [selectedDay, chartData]);
 
     const options = useMemo(() => ({
         responsive: true,
@@ -305,32 +224,32 @@ function WeatherChart({ hourlyData, timezone, selectedDay }) {
                 min: 0,
                 max: 100,
             },
-            // 'y-solar': {
-            //     type: 'linear',
-            //     display: true,
-            //     position: 'left',
-            //     title: {
-            //         display: true,
-            //         text: 'Sonneneinstrahlung (W/m²)',
-            //         color: isDarkMode ? '#ffffff' : '#333333',
-            //     },
-            //     ticks: {
-            //         color: isDarkMode ? '#ffffff' : '#333333',
-            //     },
-            //     grid: {
-            //         drawOnChartArea: false,
-            //         color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-            //     },
-            //     afterDataLimits: (scale) => {
-            //         console.log("afterDataLimits wird aufgerufen");
-            //         scale.min = 0;
-            //         if (chartData.maxSolarRadiations > 800) {
-            //             scale.max = Math.ceil(chartData.maxSolarRadiations * 1.1);
-            //         } else {
-            //             scale.max = 800;
-            //         }
-            //     }
-            // },
+            'y-solar': {
+                type: 'linear',
+                display: true,
+                position: 'left',
+                title: {
+                    display: true,
+                    text: 'Sonneneinstrahlung (W/m²)',
+                    color: isDarkMode ? '#ffffff' : '#333333',
+                },
+                ticks: {
+                    color: isDarkMode ? '#ffffff' : '#333333',
+                },
+                grid: {
+                    drawOnChartArea: false,
+                    color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                },
+                afterDataLimits: (scale) => {
+                    console.log("afterDataLimits wird aufgerufen");
+                    scale.min = 0;
+                    if (chartData.maxSolarRadiations > 800) {
+                        scale.max = Math.ceil(chartData.maxSolarRadiations * 1.1);
+                    } else {
+                        scale.max = 800;
+                    }
+                }
+            },
             'y-precip': {
                 type: 'linear',
                 display: true,
@@ -366,7 +285,16 @@ function WeatherChart({ hourlyData, timezone, selectedDay }) {
         return <div>Render Wetterdaten...</div>;
     }
 
-    return <ReactChart ref={chartRef} type='bar' data={chartData} options={options} />;
+    // Hier implementieren Sie die Logik zur Erstellung des Charts
+    // basierend auf den Daten für den ausgewählten Tag
+
+    return (
+        <div className="weather-chart">
+            <h2>Wettervorhersage für {selectedDay === 0 ? 'Heute' : `Tag ${selectedDay}`}</h2>
+            {<ReactChart ref={chartRef} type='line' data={chartData} options={options} />
+        }
+        </div>
+    );
 }
 
-export default WeatherChart;
+export default DailyForecastChart;

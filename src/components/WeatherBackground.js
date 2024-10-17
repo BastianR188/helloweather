@@ -4,7 +4,16 @@ import { DateTime } from 'luxon';
 import './WeatherBackground.css';
 
 
-const WeatherBackground = ({ weatherIcon, cloudCover, precipAmount, solarRadiation, windSpeed, windDirection, timezone }) => {
+const WeatherBackground = ({
+    weatherIcon,
+    cloudCover,
+    precipAmount,
+    solarRadiation,
+    windSpeed,
+    windDirection,
+    timezone,
+    snowfall
+}) => {
     const [currentTime, setCurrentTime] = useState(DateTime.now().setZone(timezone));
     const [isNight, setIsNight] = useState(false);
 
@@ -70,7 +79,23 @@ const WeatherBackground = ({ weatherIcon, cloudCover, precipAmount, solarRadiati
         return 'overcast';
     };
 
+    const isSnowing = () => {
+        // Es schneit, wenn Schneefall vorhanden ist und die Temperatur niedrig genug ist
+        return snowfall > 0;
+    };
+
+    const getSnowIntensity = () => {
+        if (snowfall === 0) return 'none';
+        if (snowfall < 0.5) return 'light';
+        if (snowfall < 4) return 'moderate';
+        return 'heavy';
+    };
+
+
     const getRainIntensity = () => {
+        // Kein Regen, wenn es schneit
+        if (isSnowing()) return 'none';
+        
         if (precipAmount === 0) return 'none';
         if (precipAmount < 0.1) return 'light';
         if (precipAmount < 3.5) return 'moderate';
@@ -83,14 +108,19 @@ const WeatherBackground = ({ weatherIcon, cloudCover, precipAmount, solarRadiati
         const angle = (windSpeed / 10) * maxAngle; // 10 m/s wind speed = max angle
         return windDirection > 180 ? -angle : angle; // Negative angle if wind is coming from left
     };
-    
+
     const getWindFactor = () => {
         return (windSpeed / 10) * (windDirection > 180 ? -1 : 1);
     };
-    
+
     const getRainSpeed = () => {
-        return Math.max(2, Math.min(10, 15 - windSpeed)); // Inverse relationship with wind speed
+        return random(0.6, 0.75);
     };
+
+    function random(min, max) {
+        return Math.random() * (max - min) + min;
+    }
+
 
     const getWindClass = () => {
         if (windSpeed < 5) return 'light';
@@ -99,27 +129,37 @@ const WeatherBackground = ({ weatherIcon, cloudCover, precipAmount, solarRadiati
     };
 
     return (
-        <div className='weather-background'>
-        <div 
-            className={`celestial-body ${isSunVisible() ? 'sun' : 'moon'} solar-pulse-${getSolarPulseIntensity()}`}
-            style={{ left: getCelestialBodyPosition(), top: '10%' }}
-        ></div>
-            {getRainIntensity() !== 'none' && (
-                <div 
-                    className={`rain ${getRainIntensity()}`} 
-                    style={{ 
-                        '--rain-angle': `${getRainAngle()}deg`,
-                        '--rain-speed': `${getRainSpeed()}s`,
-                        '--wind-factor': getWindFactor()
-                    }}
-                >
+        <div className={`weather-background ${getBackgroundClass()} clear-sky`}>
+            <div
+                className={`celestial-body ${isSunVisible() ? 'sun' : 'moon'} solar-pulse-${getSolarPulseIntensity()}`}
+                style={{ left: getCelestialBodyPosition(), top: '10%' }}
+            ></div>      {isSnowing() ? (
+                <div className={`snow ${getSnowIntensity()}`}>
                     {[...Array(100)].map((_, i) => (
-                        <div key={i} className="raindrop"  style={{
-                            '--start-position': Math.random(),
-                            animationDelay: `${Math.random() * 5}s`
+                        <div key={i} className="snowflake" style={{
+                            left: `${Math.random() * 100}%`,
+                            animationDelay: `${Math.random() * 5}s`,
+                            animationDuration: `${random(10, 20)}s`
                         }}></div>
                     ))}
                 </div>
+            ) : (
+                getRainIntensity() !== 'none' && (
+                    <div
+                        className={`rain ${getRainIntensity()}`}
+                        style={{
+                            '--rain-speed': `${getRainSpeed()}s`,
+                            '--wind-factor': getWindFactor()
+                        }}
+                    >
+                        {[...Array(100)].map((_, i) => (
+                            <div key={i} className="raindrop" style={{
+                                left: `${Math.random() * 100}%`,
+                                animationDelay: `${Math.random() * 5}s`,
+                            }}></div>
+                        ))}
+                    </div>
+                )
             )}
             {weatherIcon === '🌩️' && <div className="lightning"></div>}
         </div>

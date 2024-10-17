@@ -37,7 +37,7 @@ function MapComponent({ latitude, longitude, onLocationChange }) {
         <MapContainer
             center={position}
             zoom={zoom}
-            style={{ height: '200px', width: '200px' }}
+            style={{ height: '200px', width: '200px', borderRadius: '8px' }}
         >
             <ChangeView center={position} zoom={zoom} />
             <TileLayer

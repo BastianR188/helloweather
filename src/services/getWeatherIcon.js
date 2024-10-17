@@ -1,4 +1,4 @@
-export const getWeatherIcon = (cloudCover, precipProb, temp, precipAmount, weatherCode) => {
+export const getWeatherIcon = (cloudCover, precipProb, temp, precipAmount, weatherCode, snowfall) => {
     // Gewitter basierend auf weatherCode
     if (weatherCode >= 95 && weatherCode <= 99) {
         if (weatherCode === 99) return '⛈️'; // Gewitter mit schwerem Hagel
@@ -7,8 +7,9 @@ export const getWeatherIcon = (cloudCover, precipProb, temp, precipAmount, weath
     }
 
     // Schnee
-    if ((weatherCode >= 71 && weatherCode <= 77) || (temp <= 2 && precipProb > 50)) {
-        if (precipAmount > 10) return '🌨️'; // Starker Schneefall
+    if ((weatherCode >= 71 && weatherCode <= 77) || (temp <= 2 && precipProb > 50) || snowfall > 0) {
+        if (snowfall > 5) return '🌨️'; // Starker Schneefall
+        if (snowfall > 1) return '🌨'; // Mäßiger Schneefall
         return '❄️'; // Leichter Schneefall
     }
 

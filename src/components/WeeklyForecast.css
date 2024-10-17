@@ -6,10 +6,20 @@
     margin: 0 auto 80px auto;
     background-color: rgba(var(--table-bg-rgb), 0.1);
     color: var(--text-color);
+    transition: all 0.3s ease;
 }
+
+.weekly-forecast .highlight {
+    background-color: rgba(var(--tr-hover-bg-rgb), 0.3) !important;
+    transform: translateY(-1px) ;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
 
 .weekly-forecast th,
 .weekly-forecast td {
+    position: relative;
     width: calc(100% / 8);
     padding: 8px;
     border: 1px solid var(--table-border);
@@ -17,6 +27,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    transition: all 0.3s ease;
+
 }
 
 .weekly-forecast th {
@@ -29,7 +41,8 @@
 }
 
 .weekly-forecast tr:hover {
-    background-color: rgba(var(--tr-hover-bg-rgb), 1);
+    background-color: rgba(var(--tr-hover-bg-rgb), 0.6);
+    transition: all 0.3s ease;
 }
 
 /* CSS-Variablen für Light und Dark Mode */
@@ -39,7 +52,7 @@ body {
     --table-border: #555555;
     --th-bg-rgb: 68, 68, 68;
     --tr-even-bg-rgb: 58, 58, 58;
-    --tr-hover-bg-rgb: 74, 74, 74;
+    --tr-hover-bg-rgb: 52,152,219;
 }
 
 body.dark-mode {
@@ -48,6 +61,6 @@ body.dark-mode {
     --table-border: #555555;
     --th-bg-rgb: 68, 68, 68;
     --tr-even-bg-rgb: 58, 58, 58;
-    --tr-hover-bg-rgb: 74, 74, 74;
+    --tr-hover-bg-rgb: 41,128,185;
 }
 
