@@ -12,6 +12,33 @@
     margin: 0 0 0 16px;
 }
 
+
+/* Fügen Sie dies zu Ihrer SearchAndDisplay.css Datei hinzu */
+
+.error {
+    display: block;
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+    transition: all 300ms ease-out;
+    background-color: rgba(255, 0, 0, 0.1);
+    color: red;
+    padding: 0 10px;
+    margin-top: 5px;
+    border-radius: 4px;
+}
+
+.error:not(:empty) {
+    max-height: 50px;
+    /* Passen Sie diesen Wert an die maximale Höhe Ihrer Fehlermeldung an */
+    opacity: 1;
+    padding: 5px 10px;
+}
+
+
+
+
+
 .container {
     display: flex;
     justify-content: center;

@@ -5,7 +5,7 @@ import { getWeatherIcon } from '../services/getWeatherIcon';
 import ForecastSelectionService from '../services/ForecastSelectionService';
 
 function WeeklyForecast({ dailyData }) {
-    const [selectedDay, setSelectedDay] = useState(null);
+    const [, setSelectedDay] = useState(null);
     const days = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
     const dataLength = dailyData.time.length;
 

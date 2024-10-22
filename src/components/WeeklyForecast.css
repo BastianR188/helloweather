@@ -10,8 +10,8 @@
 }
 
 .weekly-forecast .highlight {
-    background-color: rgba(var(--tr-hover-bg-rgb), 0.3) !important;
-    transform: translateY(-1px) ;
+    background-color: rgba(var(--tr-hover-bg-rgb), 0.4) !important;
+    transform: translateY(-1px);
     transition: all 0.3s ease;
     cursor: pointer;
 }
@@ -41,7 +41,7 @@
 }
 
 .weekly-forecast tr:hover {
-    background-color: rgba(var(--tr-hover-bg-rgb), 0.6);
+    background-color: rgba(var(--tr-hover-bg-rgb), 0.4);
     transition: all 0.3s ease;
 }
 
@@ -52,7 +52,10 @@ body {
     --table-border: #555555;
     --th-bg-rgb: 68, 68, 68;
     --tr-even-bg-rgb: 58, 58, 58;
-    --tr-hover-bg-rgb: 52,152,219;
+    --tr-hover-bg-rgb: 52, 152, 219;
+    --text-shadow-color: 1px 1px 1px rgba(0, 0, 0, 0);
+
+    text-shadow: var(--text-shadow-color);
 }
 
 body.dark-mode {
@@ -61,6 +64,6 @@ body.dark-mode {
     --table-border: #555555;
     --th-bg-rgb: 68, 68, 68;
     --tr-even-bg-rgb: 58, 58, 58;
-    --tr-hover-bg-rgb: 41,128,185;
+    --tr-hover-bg-rgb: 41, 128, 185;
+    --text-shadow-color: 1px 1px 1px rgba(0, 0, 0, 0.8);
 }
-
