@@ -50,6 +50,27 @@ function AppContent() {
     handlePageLoad();
   }, []);
 
+  
+
+  useEffect(() => {
+    const updateWeatherIcon = () => {
+      if (dailyData) {
+        const dayIndex = selectedDay === null ? 0 : selectedDay;
+        const newIcon = getWeatherIcon(
+          dailyData.cloudcover_mean[dayIndex],
+          dailyData.precipitation_probability_mean[dayIndex],
+          dailyData.temperature_2m_mean[dayIndex],
+          dailyData.precipitation_sum[dayIndex],
+          dailyData.weathercode[dayIndex],
+          dailyData.snowfall_sum[dayIndex]
+        );
+        setWeatherIcon(newIcon);
+      }
+    };
+  
+    updateWeatherIcon();
+  }, [selectedDay, dailyData]);
+  
   useEffect(() => {
     const updateSelectedDay = () => {
       const newSelectedDay = ForecastSelectionService.getSelectedForecast();
@@ -58,16 +79,18 @@ function AppContent() {
         console.log('Selected day changed:', newSelectedDay);
       }
     };
-
+  
     // Initial den ausgewählten Tag setzen
     updateSelectedDay();
-
+  
     // Einen Intervall einrichten, um regelmäßig zu prüfen, ob sich der ausgewählte Tag geändert hat
     const interval = setInterval(updateSelectedDay, 100);
-
+  
     // Aufräumen beim Unmounten der Komponente
     return () => clearInterval(interval);
   }, [selectedDay]);
+  
+
 
   // Zusätzlicher useEffect, um Änderungen von selectedDay zu loggen
 
@@ -76,6 +99,12 @@ function AppContent() {
     setIsMapVisible(newVisibility);
     saveMapVisibility(newVisibility);
   };
+
+  const getIconForecastIcon = (selectedDay) => {
+    if (selectedDay) {
+      return selectedDay
+    } return 0
+  }
 
   const handleSearch = async (e, lat, lon, query) => {
     if (e) e.preventDefault();
@@ -122,6 +151,8 @@ function AppContent() {
         windDirection: processedHourlyData.winddirection_10m[currentHour],
         snowfall: processedHourlyData.snowfall[currentHour],
       });
+
+ 
 
       const newIcon = getWeatherIcon(
         weather.daily.cloudcover_mean[0],

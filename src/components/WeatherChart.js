@@ -44,6 +44,27 @@ function WeatherChart({ hourlyData, timezone, selectedDay }) {
         const index = Math.round(degrees / 45) % 8;
         return directions[index];
     }
+
+    function getWeatherForecastText(selectedDay, timezone) {
+        const days = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+        const today = new Date();
+        
+        let forecastText;
+        
+        if (selectedDay === null) {
+          forecastText = 'die nächsten 24 Stunden';
+        } else if (selectedDay === 0) {
+          forecastText = 'Heute';
+        } else {
+          const futureDate = new Date(today);
+          futureDate.setDate(today.getDate() + selectedDay);
+          forecastText = days[futureDate.getDay()];
+        }
+        
+        return `Wetter Vorhersage für ${forecastText} (${timezone})`;
+      }
+      
+
     useEffect(() => {
         const handleResize = () => {
             console.log('Resieze')
@@ -213,7 +234,7 @@ function WeatherChart({ hourlyData, timezone, selectedDay }) {
         plugins: {
             title: {
                 display: true,
-                text: `Wetter Vorhersage für die nächsten 24 Stunden (${timezone})`,
+                text: `${getWeatherForecastText(selectedDay, timezone)}`,
                 color: isDarkMode ? '#ffffff' : '#333333',
             },
             legend: {
