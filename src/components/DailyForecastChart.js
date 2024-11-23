@@ -48,7 +48,6 @@ function DailyForecastChart({ selectedDay = 0, hourlyData, timezone }) {
     }
     useEffect(() => {
         const handleResize = () => {
-            console.log('Resieze')
             setIsTooltipEnabled(window.innerWidth > 640);
         };
 
@@ -241,7 +240,6 @@ function DailyForecastChart({ selectedDay = 0, hourlyData, timezone }) {
                     color: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
                 },
                 afterDataLimits: (scale) => {
-                    console.log("afterDataLimits wird aufgerufen");
                     scale.min = 0;
                     if (chartData.maxSolarRadiations > 800) {
                         scale.max = Math.ceil(chartData.maxSolarRadiations * 1.1);

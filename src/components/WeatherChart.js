@@ -48,26 +48,25 @@ function WeatherChart({ hourlyData, timezone, selectedDay }) {
     function getWeatherForecastText(selectedDay, timezone) {
         const days = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
         const today = new Date();
-        
+
         let forecastText;
-        
+
         if (selectedDay === null) {
-          forecastText = 'die nächsten 24 Stunden';
+            forecastText = 'die nächsten 24 Stunden';
         } else if (selectedDay === 0) {
-          forecastText = 'Heute';
+            forecastText = 'Heute';
         } else {
-          const futureDate = new Date(today);
-          futureDate.setDate(today.getDate() + selectedDay);
-          forecastText = days[futureDate.getDay()];
+            const futureDate = new Date(today);
+            futureDate.setDate(today.getDate() + selectedDay);
+            forecastText = days[futureDate.getDay()];
         }
-        
+
         return `Wetter Vorhersage für ${forecastText} (${timezone})`;
-      }
-      
+    }
+
 
     useEffect(() => {
         const handleResize = () => {
-            console.log('Resieze')
             setIsTooltipEnabled(window.innerWidth > 640);
         };
 
@@ -96,14 +95,15 @@ function WeatherChart({ hourlyData, timezone, selectedDay }) {
         const targetDate = now.plus({ days: selectedDay }).startOf('day');
         const currentHourIndex = hourlyData.time.findIndex(time => {
             const dateTime = DateTime.fromISO(time).setZone(timezone);
-            if ( selectedDay == null){
-            return dateTime >= now;}
+            if (selectedDay == null) {
+                return dateTime >= now;
+            }
             else return dateTime >= targetDate;
         });
 
         const next24Hours = (arr) => {
             if (!arr) return [];
-                const startIndex = currentHourIndex >= 0 ? currentHourIndex : 0;
+            const startIndex = currentHourIndex >= 0 ? currentHourIndex : 0;
             return arr.slice(startIndex, startIndex + 24);
         };
 
@@ -125,14 +125,14 @@ function WeatherChart({ hourlyData, timezone, selectedDay }) {
 
         const temperatures = next24Hours(hourlyData.temperature_2m);
         const precipProbabilities = next24Hours(hourlyData.precipitation_probability);
-        const solarRadiations = next24Hours(hourlyData.direct_radiation);
+        // const solarRadiations = next24Hours(hourlyData.direct_radiation);
         const windDirections = next24Hours(hourlyData.winddirection_10m);
         const precipitations = next24Hours(hourlyData.precipitation);
         const cloudCovers = next24Hours(hourlyData.cloudcover);
         const humidities = next24Hours(hourlyData.relativehumidity_2m);
         const windSpeeds = next24Hours(hourlyData.windspeed_10m);
 
-        const maxSolarRadiations = Math.max(...solarRadiations);
+        // const maxSolarRadiations = Math.max(...solarRadiations);
         const maxPrecipProbability = Math.max(...precipProbabilities);
         const maxPrecipitation = Math.max(...precipitations);
         const scaledMaxPrecipitation = maxPrecipitation * (100 / maxPrecipProbability);
@@ -144,12 +144,34 @@ function WeatherChart({ hourlyData, timezone, selectedDay }) {
                     type: 'line',
                     label: 'Temperatur (°C)',
                     data: temperatures,
-                    borderColor: 'rgb(255, 99, 132)',
-                    backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                    borderColor: (context) => {
+                        const index = context.dataIndex;
+                        const value = context.dataset.data[index];
+                        return value < 0 ? 'rgb(0, 0, 255)' : 'rgb(255, 99, 132)';
+                    },
+                    backgroundColor: (context) => {
+                        const index = context.dataIndex;
+                        const value = context.dataset.data[index];
+                        return value < 0 ? 'rgba(0, 0, 255, 0.5)' : 'rgba(255, 99, 132, 0.5)';
+                    },
+                    segment: {
+                        borderColor: (context) => {
+                            const prev = context.p0.parsed.y;
+                            const next = context.p1.parsed.y;
+                            return (prev < 0 || next < 0) ? 'rgb(0, 0, 255)' : 'rgb(255, 99, 132)';
+                        },
+                        backgroundColor: (context) => {
+                            const prev = context.p0.parsed.y;
+                            const next = context.p1.parsed.y;
+                            return (prev < 0 || next < 0) ? 'rgba(0, 0, 255, 0.5)' : 'rgba(255, 99, 132, 0.5)';
+                        }
+                    },
                     yAxisID: 'y-temp',
                     order: 1,
                     tension: 0.4
                 },
+                
+
                 {
                     type: 'line',
                     label: 'Luftfeuchtigkeit (%)',
@@ -220,7 +242,6 @@ function WeatherChart({ hourlyData, timezone, selectedDay }) {
         if (chart && chartData) {
             chart.data = chartData;
             chart.update();
-            console.log('Chart updated due to selectedDay change:', selectedDay);
         }
     }, [selectedDay, chartData]);
 
@@ -251,6 +272,25 @@ function WeatherChart({ hourlyData, timezone, selectedDay }) {
                 },
                 labels: {
                     color: isDarkMode ? '#ffffff' : '#333333',
+                    generateLabels: (chart) => {
+                        const datasets = chart.data.datasets;
+                        const temperatures = datasets.find(d => d.label === 'Temperatur (°C)')?.data || [];
+                        return datasets.map(dataset => ({
+                            text: dataset.label,
+                            fillStyle: dataset.label === 'Temperatur (°C)' ?
+                                (temperatures.some(t => t < 0) ? 'rgb(0, 0, 255)' : 'rgb(255, 99, 132)') :
+                                dataset.backgroundColor,
+                            hidden: !chart.isDatasetVisible(datasets.indexOf(dataset)),
+                            lineCap: dataset.borderCapStyle,
+                            lineDash: dataset.borderDash,
+                            lineDashOffset: dataset.borderDashOffset,
+                            lineJoin: dataset.borderJoinStyle,
+                            lineWidth: dataset.borderWidth,
+                            strokeStyle: dataset.borderColor,
+                            pointStyle: dataset.pointStyle,
+                            datasetIndex: datasets.indexOf(dataset)
+                        }));
+                    }
                 },
             },
             tooltip: {
@@ -381,7 +421,7 @@ function WeatherChart({ hourlyData, timezone, selectedDay }) {
                 }
             },
         },
-    }), [isDarkMode, chartData, isTooltipEnabled, timezone]);
+    }), [isDarkMode, chartData, isTooltipEnabled, selectedDay, timezone]);
 
     if (!chartData) {
         return <div>Render Wetterdaten...</div>;

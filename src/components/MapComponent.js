@@ -29,7 +29,7 @@ function LocationMarker({ onLocationChange }) {
     );
 }
 
-function MapComponent({ latitude, longitude, onLocationChange }) {
+function MapComponent({ latitude, longitude, onLocationChange, mapWidth, mapHeight}) {
     const position = [latitude, longitude];
     const zoom = 10;  // Sie können den Zoom-Level nach Bedarf anpassen
 
@@ -37,7 +37,7 @@ function MapComponent({ latitude, longitude, onLocationChange }) {
         <MapContainer
             center={position}
             zoom={zoom}
-            style={{ height: '200px', width: '200px', borderRadius: '8px' }}
+            style={{ height: mapHeight, width: mapWidth, borderRadius: '8px' }}
         >
             <ChangeView center={position} zoom={zoom} />
             <TileLayer
@@ -47,6 +47,7 @@ function MapComponent({ latitude, longitude, onLocationChange }) {
             <Marker position={position} />
             <LocationMarker onLocationChange={onLocationChange} />
         </MapContainer>
+        
     );
 }
 

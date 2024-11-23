@@ -72,3 +72,39 @@
     opacity: 0;
     transition: max-height 300ms ease-in-out, opacity 300ms ease-in-out;
 }
+
+
+
+.resizer-container {
+    position: relative;
+    display: inline-block;
+    border-radius: 8px;
+    min-width: 200px;
+    min-height: 200px;
+    resize: both;
+    overflow: hidden;
+    border: 1px solid #ccc;
+}
+.resizer-container.resizing {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* schöner Schatten, wenn der Resize aktiv ist */
+}
+.mapp {
+    z-index: 99;
+}
+
+.resizer {
+    cursor: 'nwse-resize';
+    position: 'absolute';
+    right: 0;
+    bottom: 0;
+    width: '30px';
+    height: '30px';
+    background-color: gray;
+    z-index: 10;
+}
+
+@media (max-width: 1024px) {
+    .container {
+        flex-direction: column;
+    }
+}

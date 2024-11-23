@@ -13,7 +13,13 @@ function SearchAndDisplay({ handleSearch, error, coordinates, isLoading, cityNam
     const [isQueryChanged, setIsQueryChanged] = useState(false);
     const [latError, setLatError] = useState('');
     const [lonError, setLonError] = useState('');
+    const [mapWidth, setMapWidth] = useState(400);
+    const [mapHeight, setMapHeight] = useState(400);
     const nodeRef = useRef(null);
+    const mapRef = useRef(null);
+    const [isResizeStarted, setIsResizeStarted] = useState(false);
+    const [isResizing, setIsResizing] = useState(false);
+    const resizerTimeoutRef = useRef(null);
 
     useEffect(() => {
         if (coordinates && !isQueryChanged) {
@@ -22,6 +28,64 @@ function SearchAndDisplay({ handleSearch, error, coordinates, isLoading, cityNam
             setQuery(cityName); // Fügen Sie diese Zeile hinzu
         }
     }, [coordinates, isQueryChanged, cityName]); // Fügen Sie cityName zu den Abhängigkeiten hinzu
+
+    useEffect(() => {
+        if (mapRef.current) {
+            mapRef.current.invalidateSize();
+        }
+    }, [mapWidth, mapHeight]);
+
+    const handleResize = (e) => {
+        // Berechne die neue Größe, unter Berücksichtigung des Scrolls
+        let newWidth = e.pageX - nodeRef.current.offsetLeft;
+        let newHeight = e.pageY - nodeRef.current.offsetTop;
+    
+        // Mindestgröße
+        if (newHeight < 200) {
+            newHeight = 200;
+        }
+        if (newWidth < 200) {
+            newWidth = 200;
+        }
+    
+        // Nur die visuelle Darstellung der Karte während des Resizing ändern (ohne setState)
+        nodeRef.current.style.width = `${newWidth}px`;
+        nodeRef.current.style.height = `${newHeight}px`;
+    };
+    
+    
+    const stopResize = () => {
+        // Setze die endgültigen Werte von mapWidth und mapHeight nach dem Resizing
+        setMapWidth(nodeRef.current.offsetWidth);
+        setMapHeight(nodeRef.current.offsetHeight);
+        
+        setIsResizing(false); // Stoppen des Resize-Vorgangs
+        document.removeEventListener('mousemove', handleResize);
+        document.removeEventListener('mouseup', stopResize);
+        clearTimeout(resizerTimeoutRef.current);  // Timeout löschen, falls noch nicht gestartet
+    };
+    
+    const startResize = (e) => {
+        e.preventDefault();
+        setIsResizeStarted(true); // Starten des 1-Sekunden-Timers
+    
+        // Nach 1 Sekunde das Resizing aktivieren
+        resizerTimeoutRef.current = setTimeout(() => {
+            setIsResizing(true);  // Resizing aktivieren
+            document.addEventListener('mousemove', handleResize);
+            document.addEventListener('mouseup', stopResize);
+        }, 25);  
+    };
+    
+
+
+    const handleMapClick = (e) => {
+        // Verhindern, dass der mousedown-Event zum Resizer weitergegeben wird
+        console.log('klick')
+        e.stopPropagation();
+        clearTimeout(resizerTimeoutRef.current); // Timer abbrechen, wenn der Benutzer die Maus schnell loslässt
+        setIsResizeStarted(false); // Resizing nicht aktivieren
+    };
 
     const validateLat = (value) => {
         if (value < -90 || value > 90) {
@@ -148,11 +212,25 @@ function SearchAndDisplay({ handleSearch, error, coordinates, isLoading, cityNam
                                     <span className="error">{lonError}</span>
                                 </p>
                             </div>
-                            <MapComponent
-                                latitude={coordinates.latitude}
-                                longitude={coordinates.longitude}
-                                onLocationChange={handleLocationChange}
-                            />
+                            <div className={`resizer-container ${isResizing ? 'resizing' : ''}`} ref={nodeRef} onMouseDown={startResize}
+                            >
+                                <div
+                                    className="map-content"
+                                    style={{ width: '100%', height: '100%' }}
+                                    onMouseDown={handleMapClick} // Verhindert, dass das Resizing aktiviert wird
+                                >
+                                    <MapComponent
+                                        className='mapp'
+                                        key={`${mapWidth}-${mapHeight}`}
+                                        mapHeight={mapHeight}
+                                        mapWidth={mapWidth}
+                                        latitude={coordinates.latitude}
+                                        longitude={coordinates.longitude}
+                                        onLocationChange={handleLocationChange}
+                                    />
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </CSSTransition>

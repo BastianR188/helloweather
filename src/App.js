@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useEffect, useRef, useState, useContext } from 'react';
 import { DateTime } from 'luxon';
 import SearchAndDisplay from './components/SearchAndDisplay';
 import WeatherChart from './components/WeatherChart';
@@ -27,7 +27,7 @@ function AppContent() {
   const [weatherIcon, setWeatherIcon] = useState('');
   const [isMapVisible, setIsMapVisible] = useState(loadMapVisibility());
   const [timezone, setTimezone] = useState('UTC');
-
+  const weatherHeaderRef = useRef(null);
 
   const [currentWeather, setCurrentWeather] = useState({
     cloudCover: 0,
@@ -50,7 +50,7 @@ function AppContent() {
     handlePageLoad();
   }, []);
 
-  
+
 
   useEffect(() => {
     const updateWeatherIcon = () => {
@@ -67,29 +67,31 @@ function AppContent() {
         setWeatherIcon(newIcon);
       }
     };
-  
+
     updateWeatherIcon();
   }, [selectedDay, dailyData]);
-  
+
   useEffect(() => {
     const updateSelectedDay = () => {
       const newSelectedDay = ForecastSelectionService.getSelectedForecast();
       if (newSelectedDay !== selectedDay) {
         setSelectedDay(newSelectedDay);
-        console.log('Selected day changed:', newSelectedDay);
+        if (weatherHeaderRef.current) {
+          weatherHeaderRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
       }
     };
-  
+
     // Initial den ausgewählten Tag setzen
     updateSelectedDay();
-  
+
     // Einen Intervall einrichten, um regelmäßig zu prüfen, ob sich der ausgewählte Tag geändert hat
     const interval = setInterval(updateSelectedDay, 100);
-  
+
     // Aufräumen beim Unmounten der Komponente
     return () => clearInterval(interval);
   }, [selectedDay]);
-  
+
 
 
   // Zusätzlicher useEffect, um Änderungen von selectedDay zu loggen
@@ -100,11 +102,11 @@ function AppContent() {
     saveMapVisibility(newVisibility);
   };
 
-  const getIconForecastIcon = (selectedDay) => {
-    if (selectedDay) {
-      return selectedDay
-    } return 0
-  }
+  // const getIconForecastIcon = (selectedDay) => {
+  //   if (selectedDay) {
+  //     return selectedDay
+  //   } return 0
+  // }
 
   const handleSearch = async (e, lat, lon, query) => {
     if (e) e.preventDefault();
@@ -152,7 +154,7 @@ function AppContent() {
         snowfall: processedHourlyData.snowfall[currentHour],
       });
 
- 
+
 
       const newIcon = getWeatherIcon(
         weather.daily.cloudcover_mean[0],
@@ -259,14 +261,17 @@ function AppContent() {
       ) : (
         weatherData && dailyData && (
           <div className={isLoading ? 'hidden' : 'max_width'}>
-            <h2>Aktuelles Wetter: <span>{weatherIcon}</span> {cityName}</h2>
-            <WeatherChart hourlyData={weatherData} timezone={timezone} selectedDay={selectedDay} />
+            <h2 ref={weatherHeaderRef}>Aktuelles Wetter: <span>{weatherIcon}</span> {cityName}</h2>
+            <div className='chart-container'><WeatherChart hourlyData={weatherData} timezone={timezone} selectedDay={selectedDay} />
+            </div>
             <h2>7-Tage-Vorhersage:</h2>
             <WeeklyForecast dailyData={dailyData} />
 
           </div>
         )
       )}
+      <div className='footer'>© Bastian Riedmann</div>
+
     </div>
   );
 }
